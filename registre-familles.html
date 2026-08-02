@@ -8,7 +8,7 @@
   <link id="appFavicon" rel="icon" href="">
   <title>Mostaganem Bénévole - Registre administratif</title>
   <!-- Charger le SDK Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --paper: #FAF8F3;
@@ -489,6 +489,8 @@
   </style>
 </head>
 <body>
+
+<body>
   <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
     <symbol id="i-family" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
     <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></symbol>
@@ -527,7 +529,7 @@
         <button class="nav-button" type="button" data-tab="equipment"><svg class="icon"><use href="#i-box"></use></svg><span>Matériel</span></button>
         <button class="nav-button" type="button" data-tab="events"><svg class="icon"><use href="#i-calendar"></use></svg><span>Événements</span></button>
         <button class="nav-button" type="button" data-tab="bilan"><svg class="icon"><use href="#i-chart"></use></svg><span>Bilan</span></button>
-         <button class="nav-button mobile-print" type="button" id="mobileGlobalPrintBtn"><svg class="icon"><use href="#i-print"></use></svg><span>Imprimer</span></button>
+        <button class="nav-button mobile-print" type="button" id="mobileGlobalPrintBtn"><svg class="icon"><use href="#i-print"></use></svg><span>Imprimer</span></button>
       </nav>
       <div class="sidebar-footer">
         <p class="sidebar-note" id="storageNote">Vérification du stockage...</p>
@@ -654,8 +656,7 @@
             <div class="table-wrap"><table class="data-table"><thead><tr><th>Reçu</th><th>Date</th><th>Donateur</th><th>Type</th><th>Valeur / Description</th><th>Destination</th><th>Actions</th></tr></thead><tbody id="donationsTableBody"></tbody></table><div class="empty-state hidden" id="donationsEmpty"></div></div>
           </section>
         </section>
-
-        <section id="view-members" class="tab-view hidden">
+ <section id="view-members" class="tab-view hidden">
           <div class="stats-grid"><div class="stat teal"><span class="stat-label">Adhérents et bénévoles inscrits</span><strong class="stat-value" id="statMembers">0</strong></div></div>
           <section class="form-panel hidden no-print" id="memberFormPanel">
             <div class="form-panel-header"><h2>Formulaire d'adhésion</h2><button class="btn btn-secondary btn-small" type="button" data-close-panel="memberFormPanel"><svg class="icon icon-sm"><use href="#i-close"></use></svg>Fermer</button></div>
@@ -754,8 +755,7 @@
        </div>
      </main>
    </div>
-
-  <dialog id="badgeDialog" class="no-print">
+<dialog id="badgeDialog" class="no-print">
     <div class="dialog-header"><h2>Créer un badge de membre</h2><button class="btn btn-secondary icon-button" type="button" id="closeBadgeDialog" aria-label="Fermer"><svg class="icon"><use href="#i-close"></use></svg></button></div>
     <div class="dialog-body"><label for="badgeMemberSelect">Adhérent</label><select id="badgeMemberSelect"></select><div class="dialog-actions"><button class="btn btn-secondary" type="button" id="cancelBadgeDialog">Annuler</button><button class="btn btn-primary" type="button" id="generateSelectedBadge"><svg class="icon"><use href="#i-card"></use></svg>Générer le badge</button></div></div>
   </dialog>
@@ -780,7 +780,6 @@
   <script>
     'use strict';
 
-    // Reproduction autonome du logo fourni, limitée à l'interface et au favicon.
     const ASSOCIATION_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520">
       <rect width="520" height="520" fill="#fff"/>
       <g fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -822,9 +821,9 @@
       donations: { title: 'Dons', description: 'Journal des contributions financières et des dons en nature, avec leur attribution.' },
       members: { title: 'Adhérents & bénévoles', description: 'Registre officiel des membres, fiches individuelles et badges associatifs.' },
       equipment: { title: 'Prêts de matériel', description: 'Suivi des sorties, retours prévus et bons de prêt du matériel sanitaire.' },
-       events: { title: 'Événements & décharges', description: 'Gestion des budgets, frais engagés et bilans de responsabilité financière.' },
-       bilan: { title: 'Bilan', description: 'Synthèse financière instantanée de l’association.' }
-     };
+      events: { title: 'Événements & décharges', description: 'Gestion des budgets, frais engagés et bilans de responsabilité financière.' },
+      bilan: { title: 'Bilan', description: 'Synthèse financière instantanée de l’association.' }
+    };
 
     const $ = selector => document.querySelector(selector);
     const $$ = selector => [...document.querySelectorAll(selector)];
@@ -873,8 +872,7 @@
         }, 2600);
       }
     }
-
-    function normalizeState(raw) {
+function normalizeState(raw) {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
       if (!parsed || typeof parsed !== 'object') return deepCloneInitialState();
       const records = key => Array.isArray(parsed[key]) ? parsed[key].filter(item => item && typeof item === 'object' && !Array.isArray(item)) : [];
@@ -949,7 +947,7 @@
           console.warn('Les données locales sont illisibles. Le registre local est réinitialisé.', error);
           state = deepCloneInitialState();
           storageMode = 'local';
-          try { localStorage.removeItem(STORAGE_KEY); } catch (_) { /* Le prochain enregistrement retentera l'écriture. */ }
+          try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
           $('#storageNote').textContent = 'Sauvegarde locale réinitialisée';
           setStatus('Les anciennes données locales étaient illisibles. Un registre local vide a été réinitialisé.', 'warning', true);
           return;
@@ -1030,7 +1028,7 @@
       return `${prefix}-${String(nextNumber).padStart(3, '0')}`;
     }
 
-    function ageFromDate(value) {
+function ageFromDate(value) {
       if (!value) return '-';
       const birth = new Date(`${value}T12:00:00`);
       const now = new Date();
@@ -1060,13 +1058,13 @@
       } else if (currentTab === 'members') {
         actions.innerHTML = `<button class="btn btn-dark" id="printMembersList">${icon('print')}Liste officielle</button><button class="btn btn-dark" id="openBadgeDialog">${icon('card')}Créer un badge</button><button class="btn btn-primary" data-open-panel="memberFormPanel">${icon('plus')}Nouvel adhérent</button>`;
       } else if (currentTab === 'equipment') {
-         actions.innerHTML = `<button class="btn btn-primary" data-open-panel="loanFormPanel">${icon('plus')}Nouveau prêt</button>`;
-       } else if (currentTab === 'events') {
-         actions.innerHTML = `<button class="btn btn-primary" data-open-panel="eventFormPanel">${icon('plus')}Nouveau dossier</button>`;
-       } else {
-         actions.innerHTML = '';
-       }
-     }
+        actions.innerHTML = `<button class="btn btn-primary" data-open-panel="loanFormPanel">${icon('plus')}Nouveau prêt</button>`;
+      } else if (currentTab === 'events') {
+        actions.innerHTML = `<button class="btn btn-primary" data-open-panel="eventFormPanel">${icon('plus')}Nouveau dossier</button>`;
+      } else {
+        actions.innerHTML = '';
+      }
+    }
 
     function switchTab(tab) {
       if (!tabMeta[tab]) return;
@@ -1079,11 +1077,11 @@
         else button.removeAttribute('aria-current');
       });
       $('#pageTitle').textContent = tabMeta[tab].title;
-       $('#pageDescription').textContent = tabMeta[tab].description;
-       renderHeaderActions();
-       if (tab === 'bilan') renderBilan();
-       window.scrollTo({ top: 0, behavior: 'smooth' });
-     }
+      $('#pageDescription').textContent = tabMeta[tab].description;
+      renderHeaderActions();
+      if (tab === 'bilan') renderBilan();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function memberRowTemplate() {
       return `<tr>
@@ -1177,8 +1175,7 @@
       $('#aidsEmpty').classList.toggle('hidden', state.familyAids.length > 0);
       $('#aidsEmpty').innerHTML = emptyMarkup('Aucune aide familiale', 'Enregistrez une aide accordée à une famille pour commencer.');
     }
-
-    function donationDestinationLabel(donation) {
+function donationDestinationLabel(donation) {
       let destinationType = donation.destinationType;
       if (!destinationType) {
         if (!donation.destination) destinationType = 'stock';
@@ -1289,8 +1286,7 @@
       const dialog = $('#eventPhotosDialog');
       dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', '');
     }
-
-    function closeEventPhotosDialog() {
+function closeEventPhotosDialog() {
       const dialog = $('#eventPhotosDialog');
       if (dialog.open && dialog.close) dialog.close();
       else dialog.removeAttribute('open');
@@ -1328,32 +1324,32 @@
       return { id: `PHO-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name: file.name, data, addedAt: today() };
     }
 
-     function renderAll() {
-       renderFamilies();
-       renderFamilyAids();
-       renderDonations();
-       renderMembers();
-       renderLoans();
-       renderEvents();
-       if (currentTab === 'bilan') renderBilan();
-     }
+    function renderAll() {
+      renderFamilies();
+      renderFamilyAids();
+      renderDonations();
+      renderMembers();
+      renderLoans();
+      renderEvents();
+      if (currentTab === 'bilan') renderBilan();
+    }
 
-     function renderBilan() {
-       const dons = total(state.donations.filter(d => d.type === 'financial').map(d => d.amount));
-       const aides = total(state.familyAids.filter(a => a.type === 'financial').map(a => a.amount));
-       const budgetEvents = total(state.events.map(e => Number(e.budget) || 0));
-       const fraisEvents = total(state.events.flatMap(e => (e.expenses || []).map(x => Number(x.amount) || 0)));
-       const budgetRestant = budgetEvents - fraisEvents;
-       const prets = state.loans.filter(l => !l.returnedAt).length;
-       $('#bilanDons').textContent = formatMoney(dons);
-       $('#bilanAides').textContent = formatMoney(aides);
-       $('#bilanBudget').textContent = formatMoney(budgetRestant);
-       $('#bilanPrets').textContent = prets;
-       const solde = dons - aides + budgetRestant;
-       const soldeEl = $('#bilanSolde');
-       soldeEl.textContent = formatMoney(solde);
-       soldeEl.style.color = solde >= 0 ? 'var(--emerald)' : 'var(--red)';
-     }
+    function renderBilan() {
+      const dons = total(state.donations.filter(d => d.type === 'financial').map(d => d.amount));
+      const aides = total(state.familyAids.filter(a => a.type === 'financial').map(a => a.amount));
+      const budgetEvents = total(state.events.map(e => Number(e.budget) || 0));
+      const fraisEvents = total(state.events.flatMap(e => (e.expenses || []).map(x => Number(x.amount) || 0)));
+      const budgetRestant = budgetEvents - fraisEvents;
+      const prets = state.loans.filter(l => !l.returnedAt).length;
+      $('#bilanDons').textContent = formatMoney(dons);
+      $('#bilanAides').textContent = formatMoney(aides);
+      $('#bilanBudget').textContent = formatMoney(budgetRestant);
+      $('#bilanPrets').textContent = prets;
+      const solde = dons - aides + budgetRestant;
+      const soldeEl = $('#bilanSolde');
+      soldeEl.textContent = formatMoney(solde);
+      soldeEl.style.color = solde >= 0 ? 'var(--emerald)' : 'var(--red)';
+    }
 
     function officialHeader(code = '') {
       return `<header class="document-head" style="grid-template-columns:1fr auto;text-align:left"><div><div class="document-org">Association Mostaganem Bénévole</div><div class="document-meta">Registre administratif officiel - Wilaya de Mostaganem</div></div><div class="document-code">${esc(code)}</div></header>`;
@@ -1453,347 +1449,363 @@
         <div class="signature-grid"><div class="signature-space"><strong>Signature de l'adhérent</strong></div><div class="signature-space"><strong>Visa de l'association</strong>${officialSeal()}</div></div>${documentFooter()}`);
     }
 
-    function printBadge(id) {
+    function printMember(id) {
       const member = state.members.find(item => item.id === id);
       if (!member) return;
-      openPrintDocument(`Badge ${member.id}`, `<div class="member-card"><div class="member-card-head"><div><div class="member-card-brand">Mostaganem Bénévole</div><div class="member-card-kicker">Carte officielle de membre</div></div></div><div class="member-card-id">${esc(member.id)}</div><div class="member-card-body"><div class="member-card-name">${esc(member.lastName)} ${esc(member.firstName)}</div><div class="member-card-details"><div><span>Profession</span>${esc(member.profession || 'Bénévole')}</div><div><span>Mobile</span>${esc(member.mobile)}</div><div><span>Adresse</span>${esc(member.address)}</div></div></div><div class="member-card-year">Adhésion ${String(member.joinedAt || today()).slice(0,4)}</div></div>`);
+      openPrintDocument(`Fiche ${member.id}`, `${officialHeader(member.id)}<h1 class="document-title">Fiche individuelle d'adhérent</h1><p class="document-subtitle">Membre de l'association Mostaganem Bénévole</p>
+        <section class="doc-section"><h3>Identité et coordonnées</h3><div class="doc-grid"><div class="doc-field"><span>Nom</span><strong>${esc(String(member.lastName || '').toUpperCase())}</strong></div><div class="doc-field"><span>Prénom</span><strong>${esc(member.firstName)}</strong></div><div class="doc-field"><span>Date de naissance</span><strong>${formatDate(member.birthDate)} (${ageFromDate(member.birthDate)})</strong></div><div class="doc-field"><span>Mobile</span><strong>${esc(member.mobile)}</strong></div><div class="doc-field"><span>Profession</span><strong>${esc(member.profession || '-')}</strong></div><div class="doc-field"><span>Date d'adhésion</span><strong>${formatDate(member.joinedAt)}</strong></div><div class="doc-field" style="grid-column:1/-1"><span>Adresse</span><strong>${esc(member.address)}</strong></div></div></section>
+        <section class="doc-section"><div class="engagement">Je soussigné(e), <strong>${esc(member.firstName)} ${esc(member.lastName)}</strong>, confirme mon adhésion à l'association Mostaganem Bénévole et m'engage à respecter ses statuts, son règlement intérieur et ses principes de solidarité.</div></section>
+        <div class="signature-grid"><div class="signature-space"><strong>Signature de l'adhérent</strong></div><div class="signature-space"><strong>Visa de l'association</strong>${officialSeal()}</div></div>${documentFooter()}`);
     }
 
-    function printMembersList() {
-      openPrintDocument('Liste officielle des adhérents', `${officialHeader(`ADH-${new Date().getFullYear()}`)}<h1 class="document-title">Liste officielle des adhérents</h1><p class="document-subtitle">Situation au ${formatDate(today())} - ${state.members.length} membre(s)</p><table class="doc-table"><thead><tr><th>ID</th><th>Nom et prénom</th><th>Naissance</th><th>Mobile</th><th>Profession</th><th>Signature</th></tr></thead><tbody>${state.members.map(member => `<tr><td>${esc(member.id)}</td><td><strong>${esc(String(member.lastName || '').toUpperCase())} ${esc(member.firstName)}</strong></td><td>${formatDate(member.birthDate)}</td><td>${esc(member.mobile)}</td><td>${esc(member.profession || '-')}</td><td style="height:32px"></td></tr>`).join('') || '<tr><td colspan="6">Aucun adhérent inscrit.</td></tr>'}</tbody></table><div class="signature-grid" style="grid-template-columns:1fr 1fr"><div></div><div class="signature-space"><strong>Le / La président(e)</strong>${officialSeal()}</div></div>${documentFooter()}`);
+    function printMemberCard(id) {
+      const member = state.members.find(item => item.id === id);
+      if (!member) return;
+      const currentYear = new Date().getFullYear();
+      openPrintDocument(`Badge ${member.id}`, `<div class="member-card">
+        <div class="member-card-head"><img src="${LOGO_DATA_URI}" style="width:30px;height:30px;border-radius:50%;background:#fff;padding:2px" alt=""><div><div class="member-card-brand">Mostaganem Bénévole</div><div class="member-card-kicker">Carte de membre</div></div><div class="member-card-id">${esc(member.id)}</div></div>
+        <div class="member-card-body"><div class="member-card-name">${esc(member.firstName)} ${esc(member.lastName)}</div><div class="member-card-details"><div><span>Mobile</span><strong>${esc(member.mobile)}</strong></div><div><span>Qualité</span><strong>Adhérent</strong></div></div></div>
+        <div class="member-card-year">Session ${currentYear}</div>
+      </div>`);
     }
 
     function printLoan(id) {
       const loan = state.loans.find(item => item.id === id);
       if (!loan) return;
       const status = loanStatus(loan);
-      openPrintDocument(`Bon de prêt ${loan.id}`, `${equipmentLoanHeader(loan.id)}<h1 class="document-title">Bon de prêt de matériel</h1><p class="document-subtitle">Matériel sanitaire mis à disposition par l'association</p>
-        <section class="doc-section"><h3>Informations du prêt</h3><div class="doc-grid">
-          <div class="doc-field"><span>Matériel prêté</span><strong>${esc(loan.material)}</strong></div><div class="doc-field"><span>Emprunteur</span><strong>${esc(loan.borrower)}</strong></div>
-          <div class="doc-field"><span>Date de sortie</span><strong>${formatDate(loan.loanDate)}</strong></div><div class="doc-field"><span>Retour prévu</span><strong>${formatDate(loan.dueDate)}</strong></div>
-          <div class="doc-field"><span>Statut</span><strong>${esc(status.label)}</strong></div>${loan.returnedAt ? `<div class="doc-field"><span>Date de retour réelle</span><strong>${formatDate(loan.returnedAt)}</strong></div>` : ''}
+      openPrintDocument(`Bon de prêt ${loan.id}`, `${equipmentLoanHeader(loan.id)}
+        <h1 class="document-title">Bon de prêt de matériel</h1><p class="document-subtitle">Matériel sanitaire solidaire</p>
+        <section class="doc-section"><div class="engagement">L'association certifie prêter à <strong>${esc(loan.borrower)}</strong> le matériel sanitaire ci-dessous désigné. L'emprunteur s'engage à le restituer en bon état au plus tard à la date convenue.</div></section>
+        <section class="doc-section"><h3>Détails de la mise à disposition</h3><div class="doc-grid">
+          <div class="doc-field"><span>Désignation du matériel</span><strong>${esc(loan.material)}</strong></div><div class="doc-field"><span>Nom de l'emprunteur</span><strong>${esc(loan.borrower)}</strong></div>
+          <div class="doc-field"><span>Date de mise à disposition</span><strong>${formatDate(loan.loanDate)}</strong></div><div class="doc-field"><span>Date de retour prévue</span><strong>${formatDate(loan.dueDate)}</strong></div>
+          <div class="doc-field"><span>Statut actuel</span><strong>${esc(status.label)}</strong></div>
         </div></section>
-        <section class="doc-section"><h3>Engagement de l'emprunteur</h3><div class="engagement">Je soussigné(e), <strong>${esc(loan.borrower)}</strong>, reconnais avoir reçu en prêt le matériel <strong>${esc(loan.material)}</strong>. Je m'engage à en prendre soin, à ne pas le céder à une autre personne et à le restituer à l'association Mostaganem Bénévole au plus tard le <strong>${formatDate(loan.dueDate)}</strong>, dans son état d'origine, hors usure normale.</div></section>
-        <div class="signature-grid"><div class="signature-space"><strong>Signature de l'emprunteur<br>${esc(loan.borrower)}</strong></div><div class="signature-space"><strong>Cachet et signature de l'association</strong></div></div>${documentFooter()}`);
+        <div class="signature-grid"><div class="signature-space"><strong>Signature de l'emprunteur</strong></div><div class="signature-space"><strong>Visa de l'association</strong>${officialSeal()}</div></div>${documentFooter()}`);
     }
 
     function printEvent(id) {
       const event = state.events.find(item => item.id === id);
       if (!event) return;
-      const spent = total((event.expenses || []).map(expense => expense.amount));
+      const spent = total((event.expenses || []).map(e => e.amount));
       const balance = Number(event.budget) - spent;
-      openPrintDocument(`Décharge ${event.id}`, `${officialHeader(event.id)}<h1 class="document-title">Décharge et bilan financier</h1><p class="document-subtitle">Dossier événement du ${formatDate(event.date)}</p>
-        <section class="doc-section"><h3>Objet de la décharge</h3><div class="doc-grid"><div class="doc-field"><span>Événement</span><strong>${esc(event.name)}</strong></div><div class="doc-field"><span>Responsable</span><strong>${esc(event.responsible)}</strong></div><div class="doc-field" style="grid-column:1/-1"><span>Description</span><strong>${esc(event.description)}</strong></div></div></section>
-        <section class="doc-section"><h3>Détail des frais engagés</h3><table class="doc-table"><thead><tr><th>N.</th><th>Description</th><th class="text-right">Montant</th></tr></thead><tbody>${(event.expenses || []).map((expense, index) => `<tr><td>${index + 1}</td><td>${esc(expense.description)}</td><td class="text-right">${formatMoney(expense.amount)}</td></tr>`).join('') || '<tr><td colspan="3">Aucun frais déclaré</td></tr>'}</tbody></table><div class="doc-total"><div class="doc-total-row"><span>Budget / Recette</span><strong>${formatMoney(event.budget)}</strong></div><div class="doc-total-row"><span>Total des frais</span><strong>${formatMoney(spent)}</strong></div><div class="doc-total-row final"><span>Solde</span><strong class="${balance >= 0 ? 'positive' : 'negative'}">${formatMoney(balance)}</strong></div></div></section>
-        <section class="doc-section"><h3>Engagement de responsabilité</h3><div class="engagement">Je soussigné(e), <strong>${esc(event.responsible)}</strong>, reconnais avoir reçu la somme allouée au dossier <strong>${esc(event.id)} - ${esc(event.name)}</strong>. Je certifie l'exactitude des frais présentés ci-dessus et m'engage à restituer tout solde positif, ou à justifier tout dépassement, auprès de l'association Mostaganem Bénévole.</div></section>
-        <div class="signature-grid"><div class="signature-space"><strong>Le / La responsable<br>${esc(event.responsible)}</strong></div><div class="signature-space"><strong>Pour l'association</strong>${officialSeal()}</div></div>${documentFooter()}`);
+      openPrintDocument(`Dossier ${event.id}`, `${officialHeader(event.id)}
+        <h1 class="document-title">Décharge & bilan financier d'événement</h1><p class="document-subtitle">${esc(event.name)} - ${formatDate(event.date)}</p>
+        <section class="doc-section"><h3>Informations générales</h3><div class="doc-grid">
+          <div class="doc-field"><span>Responsable engagé</span><strong>${esc(event.responsible)}</strong></div><div class="doc-field"><span>Budget alloué</span><strong>${formatMoney(event.budget)}</strong></div>
+          <div class="doc-field" style="grid-column:1/-1"><span>Objet de l'événement</span><strong>${esc(event.description)}</strong></div>
+        </div></section>
+        <section class="doc-section"><h3>Justificatif des frais engagés</h3><table class="doc-table"><thead><tr><th>Désignation de la dépense</th><th style="text-align:right">Montant</th></tr></thead><tbody>${(event.expenses || []).map(e => `<tr><td>${esc(e.description)}</td><td style="text-align:right">${formatMoney(e.amount)}</td></tr>`).join('') || '<tr><td colspan="2">Aucun frais enregistré</td></tr>'}</tbody></table>
+        <div class="doc-total"><div class="doc-total-row"><span>Total des dépenses :</span><strong>${formatMoney(spent)}</strong></div><div class="doc-total-row final"><span>Solde :</span><strong>${formatMoney(balance)}</strong></div></div></section>
+        <div class="signature-grid"><div class="signature-space"><strong>Signature du responsable<br>${esc(event.responsible)}</strong></div><div class="signature-space"><strong>Validation de l'association</strong>${officialSeal()}</div></div>${documentFooter()}`);
     }
 
-    function printCurrentRegister() {
-      if (currentTab === 'members') return printMembersList();
-      const configs = {
-        families: { title: 'Registre des familles bénéficiaires', headers: ['Code','Date','Famille','Situation','Foyer'], rows: state.families.map(f => [f.id, formatDate(f.date), f.name, f.situation, `${(f.members || []).length} pers.`]) },
-        assistance: { title: 'Registre des aides aux familles', headers: ['Code','Date','Famille','Type','Valeur ou description'], rows: state.familyAids.map(aid => [aid.id, formatDate(aid.date), aid.familyName, aid.type === 'financial' ? 'Financière' : 'Autre', aid.type === 'financial' ? formatMoney(aid.amount) : aid.description]) },
-        donations: { title: 'Journal officiel des dons', headers: ['Reçu','Date','Donateur','Type','Valeur','Destination'], rows: state.donations.map(d => [d.id, formatDate(d.date), d.donor, d.type === 'financial' ? 'Financier' : 'Nature', d.type === 'financial' ? formatMoney(d.amount) : `${d.quantity} x ${d.description}`, donationDestinationLabel(d)]) },
-        equipment: { title: 'Registre des prêts de matériel', headers: ['Code','Matériel','Emprunteur','Sortie','Retour prévu','Statut'], rows: state.loans.map(loan => [loan.id, loan.material, loan.borrower, formatDate(loan.loanDate), formatDate(loan.dueDate), loanStatus(loan).label]) },
-        events: { title: 'Registre des événements et décharges', headers: ['ID','Date','Événement','Responsable','Budget','Frais'], rows: state.events.map(e => [e.id, formatDate(e.date), e.name, e.responsible, formatMoney(e.budget), formatMoney(total((e.expenses || []).map(x => x.amount)))]) }
-      };
-      const config = configs[currentTab];
-      openPrintDocument(config.title, `${officialHeader(`REG-${new Date().getFullYear()}`)}<h1 class="document-title">${esc(config.title)}</h1><p class="document-subtitle">Édition du ${formatDate(today())}</p><table class="doc-table"><thead><tr>${config.headers.map(header => `<th>${esc(header)}</th>`).join('')}</tr></thead><tbody>${config.rows.map(row => `<tr>${row.map(cell => `<td>${esc(cell)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${config.headers.length}">Aucune donnée enregistrée.</td></tr>`}</tbody></table>${documentFooter()}`);
+    function printMembersList() {
+      openPrintDocument('Liste des adhérents', `${officialHeader('ADH-LISTE')}
+        <h1 class="document-title">Registre officiel des adhérents</h1><p class="document-subtitle">Total : ${state.members.length} membre(s) inscrit(s)</p>
+        <section class="doc-section"><table class="doc-table"><thead><tr><th>ID</th><th>Nom & Prénom</th><th>Âge</th><th>Téléphone</th><th>Profession</th><th>Adresse</th></tr></thead><tbody>${state.members.map(m => `<tr><td>${esc(m.id)}</td><td>${esc(String(m.lastName).toUpperCase())} ${esc(m.firstName)}</td><td>${ageFromDate(m.birthDate)}</td><td>${esc(m.mobile)}</td><td>${esc(m.profession || '-')}</td><td>${esc(m.address)}</td></tr>`).join('') || '<tr><td colspan="6">Aucun adhérent enregistré</td></tr>'}</tbody></table></section>
+        <div class="signature-grid"><div></div><div class="signature-space"><strong>Cachet de l'association</strong>${officialSeal()}</div></div>${documentFooter()}`);
     }
 
-    function resetFamilyForm() {
-      $('#familyForm').reset();
-      $('#familyDate').value = today();
-      $('#familyDate').max = today();
-      $('#familyMembersRows').innerHTML = '';
-      addFamilyMemberRow();
-    }
-    function resetDonationForm() { $('#donationForm').reset(); $('#donationDate').value = today(); $('#donationDate').max = today(); toggleDonationType(); toggleDonationDestination(); }
-    function resetAidForm() { $('#aidForm').reset(); $('#aidDate').value = today(); $('#aidDate').max = today(); toggleAidType(); }
-    function resetMemberForm() { $('#memberForm').reset(); $('#memberBirthDate').max = today(); }
-    function resetLoanForm() { $('#loanForm').reset(); $('#loanDate').value = today(); $('#loanDate').max = today(); $('#loanDueDate').min = today(); }
-    function resetEventForm() { $('#eventForm').reset(); $('#eventDate').value = today(); $('#expenseRows').innerHTML = ''; addExpenseRow(); updateEventCalculation(); }
-
-    function toggleDonationType() {
-      const isFinancial = $('#donationType').value === 'financial';
-      $('#donationAmountField').classList.toggle('hidden', !isFinancial);
-      $('#donationDescriptionField').classList.toggle('hidden', isFinancial);
-      $('#donationQuantityField').classList.toggle('hidden', isFinancial);
-      $('#donationAmount').required = isFinancial;
-      $('#donationDescription').required = !isFinancial;
-      $('#donationQuantity').required = !isFinancial;
+    function globalPrint() {
+      const donsTotal = total(state.donations.filter(d => d.type === 'financial').map(d => d.amount));
+      const aidesTotal = total(state.familyAids.filter(a => a.type === 'financial').map(a => a.amount));
+      openPrintDocument('Bilan Global', `${officialHeader('BILAN-GLOBAL')}
+        <h1 class="document-title">Synthèse générale des registres</h1><p class="document-subtitle">Éditée le ${formatDate(today())}</p>
+        <section class="doc-section"><h3>Aperçu des statistiques</h3><div class="doc-grid">
+          <div class="doc-field"><span>Familles enregistrées</span><strong>${state.families.length}</strong></div>
+          <div class="doc-field"><span>Dons financiers reçus</span><strong>${formatMoney(donsTotal)}</strong></div>
+          <div class="doc-field"><span>Aides financières versées</span><strong>${formatMoney(aidesTotal)}</strong></div>
+          <div class="doc-field"><span>Adhérents actifs</span><strong>${state.members.length}</strong></div>
+          <div class="doc-field"><span>Prêts de matériel en cours</span><strong>${state.loans.filter(l => !l.returnedAt).length}</strong></div>
+          <div class="doc-field"><span>Dossiers d'événements</span><strong>${state.events.length}</strong></div>
+        </div></section>${documentFooter()}`);
     }
 
-    function toggleAidType() {
-      const isFinancial = $('#aidType').value === 'financial';
-      $('#aidAmountField').classList.toggle('hidden', !isFinancial);
-      $('#aidDescriptionField').classList.toggle('hidden', isFinancial);
-      $('#aidAmount').required = isFinancial;
-      $('#aidDescription').required = !isFinancial;
-    }
+    // --- ÉVÉNEMENTS & INITIALISATION ---
 
-    function toggleDonationDestination() {
-      const destinationType = $('#donationDestination').value;
-      const isFamily = destinationType === 'family';
-      const isEvent = destinationType === 'event';
-      const isOther = destinationType === 'other';
-      $('#donationFamilyDestinationField').classList.toggle('hidden', !isFamily);
-      $('#donationEventDestinationField').classList.toggle('hidden', !isEvent);
-      $('#donationOtherDestinationField').classList.toggle('hidden', !isOther);
-      $('#donationFamilyDestination').required = isFamily;
-      $('#donationEventDestination').required = isEvent;
-      $('#donationOtherDestination').required = isOther;
-    }
+    function setupEventListeners() {
+      document.addEventListener('click', async e => {
+        const btnNav = e.target.closest('.nav-button[data-tab]');
+        if (btnNav) { switchTab(btnNav.dataset.tab); return; }
 
-    document.addEventListener('click', async event => {
-      const nav = event.target.closest('[data-tab]');
-      if (nav) switchTab(nav.dataset.tab);
-
-      const openPanel = event.target.closest('[data-open-panel]');
-      if (openPanel) {
-        $(`#${openPanel.dataset.openPanel}`).classList.remove('hidden');
-        $(`#${openPanel.dataset.openPanel}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      const closePanel = event.target.closest('[data-close-panel]');
-      if (closePanel) $(`#${closePanel.dataset.closePanel}`).classList.add('hidden');
-
-      const action = event.target.closest('[data-action]');
-      if (!action) return;
-      const { action: type, id } = action.dataset;
-      if (type === 'print-family') printFamily(id);
-      if (type === 'print-aid') printFamilyAid(id);
-      if (type === 'print-donation') printDonation(id);
-      if (type === 'print-member') printMember(id);
-      if (type === 'badge-member') printBadge(id);
-      if (type === 'print-loan') printLoan(id);
-      if (type === 'event-photos') openEventPhotosDialog(id);
-      if (type === 'print-event') printEvent(id);
-      if (type === 'return-loan') {
-        const loan = state.loans.find(item => item.id === id);
-        if (!loan || !confirm(`Confirmer le retour du matériel « ${loan.material} » aujourd'hui ?`)) return;
-        await commitMutation(action, () => { loan.returnedAt = today(); }, `Le retour du matériel ${id} a été enregistré.`);
-      }
-      if (type.startsWith('delete-')) {
-        const labels = { 'delete-family': ['families', 'la famille'], 'delete-aid': ['familyAids', "l'aide familiale"], 'delete-donation': ['donations', 'le don'], 'delete-member': ['members', "l'adhérent"], 'delete-loan': ['loans', 'le prêt de matériel'], 'delete-event': ['events', "le dossier d'événement"] };
-        const [collection, label] = labels[type];
-        const eventRecord = type === 'delete-event' ? state.events.find(item => item.id === id) : null;
-        const photoWarning = eventRecord?.photos?.length ? ` Les ${eventRecord.photos.length} photo(s) associée(s) seront également supprimée(s).` : '';
-        if (!confirm(`Confirmer la suppression de ${label} ${id} ?${photoWarning} Cette action est définitive.`)) return;
-        await commitMutation(action, () => { state[collection] = state[collection].filter(item => item.id !== id); }, `${id} a été supprimé après confirmation de la sauvegarde.`);
-      }
-    });
-
-    $('#familyForm').addEventListener('submit', async event => {
-      event.preventDefault();
-      const button = event.submitter;
-      const members = collectFamilyMembers();
-      if (!members.length) { setStatus('Ajoutez au moins un membre au foyer.', 'error', true); return; }
-      if (!$('#familyName').value.trim()) { validationError('Le nom de la famille est obligatoire.', '#familyName'); return; }
-      if (!$('#familyAddress').value.trim()) { validationError("L'adresse de la famille est obligatoire.", '#familyAddress'); return; }
-      if (!isIsoDate($('#familyDate').value) || $('#familyDate').value > today()) { validationError("La date d'inscription n'est pas valide.", '#familyDate'); return; }
-      if (members.some(member => member.birthDate && (!isIsoDate(member.birthDate) || member.birthDate > today()))) { validationError('Une date de naissance du foyer est invalide ou située dans le futur.', '.member-birthdate'); return; }
-      const family = {
-        id: nextId(state.families, 'FAM'), date: $('#familyDate').value, name: $('#familyName').value.trim(), situation: $('#familySituation').value,
-        phone: $('#familyPhone').value.trim(), address: $('#familyAddress').value.trim(), members,
-        documents: { home: $('#docHome').files[0]?.name || '', family: $('#docFamily').files[0]?.name || '', cnas: $('#docCnas').files[0]?.name || '', casnos: $('#docCasnos').files[0]?.name || '' }
-      };
-      const saved = await commitMutation(button, () => state.families.push(family), `${family.id} enregistrée avec succès.`);
-      if (saved) { resetFamilyForm(); $('#familyFormPanel').classList.add('hidden'); }
-    });
-
-    $('#aidForm').addEventListener('submit', async event => {
-      event.preventDefault();
-      const type = $('#aidType').value;
-      if (!$('#aidFamilyName').value.trim()) { validationError('Le nom de la famille bénéficiaire est obligatoire.', '#aidFamilyName'); return; }
-      if (!isIsoDate($('#aidDate').value) || $('#aidDate').value > today()) { validationError("La date de l'aide n'est pas valide.", '#aidDate'); return; }
-      if (type === 'financial' && !isPositiveNumber($('#aidAmount').value)) { validationError("Le montant de l'aide doit être supérieur à zéro.", '#aidAmount'); return; }
-      if (type === 'other' && !$('#aidDescription').value.trim()) { validationError("La description de l'aide est obligatoire.", '#aidDescription'); return; }
-      const aid = { id: nextId(state.familyAids, 'AID'), date: $('#aidDate').value, familyName: $('#aidFamilyName').value.trim(), type, amount: type === 'financial' ? Number($('#aidAmount').value) : 0, description: type === 'other' ? $('#aidDescription').value.trim() : '' };
-      const saved = await commitMutation(event.submitter, () => state.familyAids.push(aid), `${aid.id} enregistrée avec succès.`);
-      if (saved) { resetAidForm(); $('#aidFormPanel').classList.add('hidden'); }
-    });
-
-    $('#donationForm').addEventListener('submit', async event => {
-      event.preventDefault();
-      const type = $('#donationType').value;
-      const destinationType = $('#donationDestination').value;
-      const destination = destinationType === 'family' ? $('#donationFamilyDestination').value : destinationType === 'event' ? $('#donationEventDestination').value : destinationType === 'other' ? $('#donationOtherDestination').value.trim() : '';
-      if (!$('#donorName').value.trim()) { validationError('Le nom du donateur est obligatoire.', '#donorName'); return; }
-      if (!isIsoDate($('#donationDate').value) || $('#donationDate').value > today()) { validationError("La date du don n'est pas valide.", '#donationDate'); return; }
-      if (type === 'financial' && !isPositiveNumber($('#donationAmount').value)) { validationError('Le montant du don doit être supérieur à zéro.', '#donationAmount'); return; }
-      if (type === 'nature' && !$('#donationDescription').value.trim()) { validationError('La description du don en nature est obligatoire.', '#donationDescription'); return; }
-      if (type === 'nature' && (!Number.isInteger(Number($('#donationQuantity').value)) || Number($('#donationQuantity').value) < 1)) { validationError('La quantité doit être un nombre entier supérieur ou égal à 1.', '#donationQuantity'); return; }
-      if (destinationType !== 'stock' && !destination) { validationError('Veuillez préciser la destination du don.', destinationType === 'family' ? '#donationFamilyDestination' : destinationType === 'event' ? '#donationEventDestination' : '#donationOtherDestination'); return; }
-      const donation = { id: nextId(state.donations, 'REC'), date: $('#donationDate').value, donor: $('#donorName').value.trim(), type, amount: type === 'financial' ? Number($('#donationAmount').value) : 0, description: type === 'nature' ? $('#donationDescription').value.trim() : '', quantity: type === 'nature' ? Number($('#donationQuantity').value) : 0, destinationType, destination };
-      const saved = await commitMutation(event.submitter, () => state.donations.push(donation), `${donation.id} enregistré avec succès.`);
-      if (saved) { resetDonationForm(); $('#donationFormPanel').classList.add('hidden'); }
-    });
-
-    $('#memberForm').addEventListener('submit', async event => {
-      event.preventDefault();
-      if (!$('#memberLastName').value.trim()) { validationError("Le nom de l'adhérent est obligatoire.", '#memberLastName'); return; }
-      if (!$('#memberFirstName').value.trim()) { validationError("Le prénom de l'adhérent est obligatoire.", '#memberFirstName'); return; }
-      if (!isIsoDate($('#memberBirthDate').value) || $('#memberBirthDate').value > today()) { validationError("La date de naissance de l'adhérent n'est pas valide.", '#memberBirthDate'); return; }
-      if (!$('#memberMobile').value.trim()) { validationError('Le numéro de mobile est obligatoire.', '#memberMobile'); return; }
-      if (!$('#memberAddress').value.trim()) { validationError("L'adresse de l'adhérent est obligatoire.", '#memberAddress'); return; }
-      const member = { id: nextId(state.members, 'ADH'), lastName: $('#memberLastName').value.trim(), firstName: $('#memberFirstName').value.trim(), birthDate: $('#memberBirthDate').value, mobile: $('#memberMobile').value.trim(), profession: $('#memberProfession').value.trim(), address: $('#memberAddress').value.trim(), joinedAt: today() };
-      const saved = await commitMutation(event.submitter, () => state.members.push(member), `${member.id} enregistré avec succès.`);
-      if (saved) { resetMemberForm(); $('#memberFormPanel').classList.add('hidden'); }
-    });
-
-    $('#loanForm').addEventListener('submit', async event => {
-      event.preventDefault();
-      const loanDate = $('#loanDate').value;
-      const dueDate = $('#loanDueDate').value;
-      if (!$('#loanMaterial').value.trim()) { validationError('Le nom du matériel est obligatoire.', '#loanMaterial'); return; }
-      if (!$('#loanBorrower').value.trim()) { validationError("Le nom de l'emprunteur est obligatoire.", '#loanBorrower'); return; }
-      if (!isIsoDate(loanDate) || loanDate > today()) { validationError("La date de sortie n'est pas valide.", '#loanDate'); return; }
-      if (!isIsoDate(dueDate)) { validationError("La date de retour prévue n'est pas valide.", '#loanDueDate'); return; }
-      if (dueDate < loanDate) { setStatus('La date de retour prévue doit être postérieure ou égale à la date de sortie.', 'error', true); return; }
-      const loan = { id: nextId(state.loans, 'MAT'), material: $('#loanMaterial').value.trim(), borrower: $('#loanBorrower').value.trim(), loanDate, dueDate, returnedAt: '' };
-      const saved = await commitMutation(event.submitter, () => state.loans.push(loan), `${loan.id} enregistré avec succès.`);
-      if (saved) { resetLoanForm(); $('#loanFormPanel').classList.add('hidden'); }
-    });
-
-    $('#eventForm').addEventListener('submit', async event => {
-      event.preventDefault();
-      const expenses = collectExpenses();
-      if (!expenses.length) { setStatus('Ajoutez au moins une ligne de frais.', 'error', true); return; }
-      if (!isIsoDate($('#eventDate').value)) { validationError("La date de l'événement n'est pas valide.", '#eventDate'); return; }
-      if (!$('#eventName').value.trim()) { validationError("Le nom de l'événement est obligatoire.", '#eventName'); return; }
-      if ($('#eventBudget').value === '' || Number($('#eventBudget').value) < 0 || !Number.isFinite(Number($('#eventBudget').value))) { validationError('Le budget doit être un montant positif ou nul.', '#eventBudget'); return; }
-      if (!$('#eventResponsible').value.trim()) { validationError('Le nom du responsable est obligatoire.', '#eventResponsible'); return; }
-      if (!$('#eventDescription').value.trim()) { validationError("La description de l'événement est obligatoire.", '#eventDescription'); return; }
-      if (expenses.some(expense => !isPositiveNumber(expense.amount))) { validationError('Chaque ligne de frais doit comporter un montant supérieur à zéro.', '.expense-amount'); return; }
-      const record = { id: nextId(state.events, 'EVT'), date: $('#eventDate').value, name: $('#eventName').value.trim(), budget: Number($('#eventBudget').value) || 0, responsible: $('#eventResponsible').value.trim(), description: $('#eventDescription').value.trim(), expenses, photos: [] };
-      const saved = await commitMutation(event.submitter, () => state.events.push(record), `${record.id} enregistré avec succès.`);
-      if (saved) { resetEventForm(); $('#eventFormPanel').classList.add('hidden'); }
-    });
-
-    $('#addFamilyMember').addEventListener('click', addFamilyMemberRow);
-    $('#familyMembersRows').addEventListener('click', event => {
-      const button = event.target.closest('.remove-member-row');
-      if (!button) return;
-      if ($$('#familyMembersRows tr').length === 1) { setStatus('Le foyer doit conserver au moins une ligne.', 'warning', true); return; }
-      button.closest('tr').remove();
-    });
-    $('#addExpense').addEventListener('click', addExpenseRow);
-    $('#expenseRows').addEventListener('click', event => {
-      const button = event.target.closest('.remove-expense-row');
-      if (!button) return;
-      if ($$('#expenseRows tr').length === 1) { setStatus('Le dossier doit conserver au moins une ligne de frais.', 'warning', true); return; }
-      button.closest('tr').remove();
-      updateEventCalculation();
-    });
-    $('#eventForm').addEventListener('input', updateEventCalculation);
-    $('#aidType').addEventListener('change', toggleAidType);
-    $('#donationType').addEventListener('change', toggleDonationType);
-    $('#donationDestination').addEventListener('change', toggleDonationDestination);
-    $('#loanDate').addEventListener('change', () => {
-      $('#loanDueDate').min = $('#loanDate').value;
-      if ($('#loanDueDate').value && $('#loanDueDate').value < $('#loanDate').value) $('#loanDueDate').value = $('#loanDate').value;
-    });
-     $('#familyMonthFilter').addEventListener('change', renderFamilies);
-     $('#familyYearFilter').addEventListener('change', renderFamilies);
-     $('#refreshBilan').addEventListener('click', renderBilan);
-
-    $('#headerActions').addEventListener('click', event => {
-      if (event.target.closest('#printMembersList')) printMembersList();
-      if (event.target.closest('#openBadgeDialog')) {
-        if (!state.members.length) { setStatus('Inscrivez au moins un adhérent avant de créer un badge.', 'warning', true); return; }
-        $('#badgeDialog').showModal ? $('#badgeDialog').showModal() : $('#badgeDialog').setAttribute('open', '');
-      }
-    });
-    function closeBadgeDialog() { $('#badgeDialog').close ? $('#badgeDialog').close() : $('#badgeDialog').removeAttribute('open'); }
-    $('#closeBadgeDialog').addEventListener('click', closeBadgeDialog);
-    $('#cancelBadgeDialog').addEventListener('click', closeBadgeDialog);
-    $('#generateSelectedBadge').addEventListener('click', () => { const id = $('#badgeMemberSelect').value; if (id) { closeBadgeDialog(); printBadge(id); } });
-    $('#closeEventPhotosDialog').addEventListener('click', closeEventPhotosDialog);
-    $('#saveEventPhotos').addEventListener('click', async event => {
-      const eventRecord = state.events.find(item => item.id === activePhotoEventId);
-      if (!eventRecord) { setPhotoDialogMessage("Le dossier de l'événement est introuvable.", 'error'); return; }
-      const files = [...$('#eventPhotoFiles').files];
-      if (!files.length) { setPhotoDialogMessage('Sélectionnez au moins une photo.', 'error'); return; }
-      const existingCount = Array.isArray(eventRecord.photos) ? eventRecord.photos.length : 0;
-      if (existingCount + files.length > 10) { setPhotoDialogMessage(`Vous pouvez encore ajouter ${Math.max(0, 10 - existingCount)} photo(s) à cet événement.`, 'error'); return; }
-      const button = event.currentTarget;
-      button.disabled = true;
-      setPhotoDialogMessage('Compression et préparation des photos en cours...');
-      try {
-        const photos = [];
-        for (const file of files) photos.push(await compressEventPhoto(file));
-        const saved = await commitMutation(button, () => {
-          eventRecord.photos = Array.isArray(eventRecord.photos) ? eventRecord.photos : [];
-          eventRecord.photos.push(...photos);
-        }, `${photos.length} photo(s) ajoutée(s) à ${eventRecord.id}.`);
-        if (saved) {
-          $('#eventPhotoFiles').value = '';
-          renderEventPhotosDialog();
-          setPhotoDialogMessage(storageMode === 'memory' ? 'Photos ajoutées temporairement en mémoire. Aucun stockage persistant n’est disponible.' : 'Photos enregistrées avec succès.', storageMode === 'memory' ? 'error' : 'success');
+        const btnOpenPanel = e.target.closest('[data-open-panel]');
+        if (btnOpenPanel) {
+          const panel = $(`#${btnOpenPanel.dataset.openPanel}`);
+          if (panel) {
+            panel.classList.remove('hidden');
+            panel.scrollIntoView({ behavior: 'smooth' });
+            if (btnOpenPanel.dataset.openPanel === 'familyFormPanel' && !$('#familyMembersRows').children.length) addFamilyMemberRow();
+            if (btnOpenPanel.dataset.openPanel === 'eventFormPanel' && !$('#expenseRows').children.length) addExpenseRow();
+          }
+          return;
         }
-      } catch (error) {
-        setPhotoDialogMessage(error.message || "Impossible d'enregistrer les photos.", 'error');
-      } finally {
-        button.disabled = false;
-      }
-    });
-    $('#eventPhotosGrid').addEventListener('click', async event => {
-      const button = event.target.closest('[data-delete-event-photo]');
-      if (!button) return;
-      const eventRecord = state.events.find(item => item.id === activePhotoEventId);
-      const photoId = button.dataset.deleteEventPhoto;
-      const photo = eventRecord?.photos?.find(item => item.id === photoId);
-      if (!eventRecord || !photo || !confirm(`Supprimer définitivement la photo « ${photo.name || 'Photo'} » ?`)) return;
-      const saved = await commitMutation(button, () => { eventRecord.photos = eventRecord.photos.filter(item => item.id !== photoId); }, 'Photo supprimée après confirmation de la sauvegarde.');
-      if (saved) {
-        renderEventPhotosDialog();
-        setPhotoDialogMessage(storageMode === 'memory' ? 'Photo supprimée temporairement en mémoire.' : 'Photo supprimée avec succès.', storageMode === 'memory' ? 'error' : 'success');
-      }
-    });
-    $('#eventPhotosDialog').addEventListener('close', () => { activePhotoEventId = ''; $('#eventPhotoFiles').value = ''; });
-    $('#globalPrintBtn').addEventListener('click', printCurrentRegister);
-    $('#mobileGlobalPrintBtn').addEventListener('click', printCurrentRegister);
-    $('#closePrintArea').addEventListener('click', closePrintDocument);
-    $('#printDocumentBtn').addEventListener('click', () => window.print());
-    document.addEventListener('keydown', event => { if (event.key === 'Escape' && $('#printArea').classList.contains('visible')) closePrintDocument(); });
-    
-    loadFamilies();
-document.getElementById('headerLogo').src = LOGO_DATA_URI;
-  // 1. Initialiser Supabase avec tes clés
-  const SUPABASE_URL = https://cquptrnazysifdytyzvv.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_lrWwVjMx5_CiMyqBDadf2A_xUNclMdw';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 2. Exemple pour récuperer les familles depuis la base de données
-  async function loadFamilies() {
-  try {
-    const { data, error } = await supabase
-      .from('suivi_materiel')
-      .select('*');
+        const btnClosePanel = e.target.closest('[data-close-panel]');
+        if (btnClosePanel) {
+          const panel = $(`#${btnClosePanel.dataset.closePanel}`);
+          if (panel) panel.classList.add('hidden');
+          return;
+        }
 
-    if (error) throw error;
+        const actionBtn = e.target.closest('[data-action]');
+        if (actionBtn) {
+          const act = actionBtn.dataset.action;
+          const id = actionBtn.dataset.id;
+          if (act === 'print-family') printFamily(id);
+          else if (act === 'print-aid') printFamilyAid(id);
+          else if (act === 'print-donation') printDonation(id);
+          else if (act === 'print-member') printMember(id);
+          else if (act === 'badge-member') printMemberCard(id);
+          else if (act === 'print-loan') printLoan(id);
+          else if (act === 'print-event') printEvent(id);
+          else if (act === 'event-photos') openEventPhotosDialog(id);
+          else if (act === 'return-loan') {
+            if (confirm('Confirmer le retour de ce matériel sanitaire ?')) {
+              await commitMutation(actionBtn, () => {
+                const item = state.loans.find(l => l.id === id);
+                if (item) item.returnedAt = today();
+              }, 'Retour du matériel enregistré.');
+            }
+          } else if (act.startsWith('delete-')) {
+            const domain = act.replace('delete-', '');
+            const keyMap = { family: 'families', aid: 'familyAids', donation: 'donations', member: 'members', loan: 'loans', event: 'events' };
+            const key = keyMap[domain];
+            if (key && confirm('Êtes-vous sûr de vouloir supprimer cet enregistrement ?')) {
+              await commitMutation(actionBtn, () => { state[key] = state[key].filter(item => item.id !== id); }, 'Enregistrement supprimé.');
+            }
+          }
+          return;
+        }
 
-    prets = data || [];
-    renderMateriel(); // Mettre à jour l'affichage de votre tableau
-  } catch (e) {
-    console.error('Erreur chargement Supabase :', e);
-    showToast("Erreur lors du chargement des données");
-  }
-}
+        if (e.target.closest('#addFamilyMember')) { addFamilyMemberRow(); return; }
+        if (e.target.closest('#addExpense')) { addExpenseRow(); return; }
+        if (e.target.closest('.remove-member-row')) { e.target.closest('tr').remove(); return; }
+        if (e.target.closest('.remove-expense-row')) { e.target.closest('tr').remove(); updateEventCalculation(); return; }
+        if (e.target.closest('#globalPrintBtn') || e.target.closest('#mobileGlobalPrintBtn')) { globalPrint(); return; }
+        if (e.target.closest('#printMembersList')) { printMembersList(); return; }
+        if (e.target.closest('#closePrintArea')) { closePrintDocument(); return; }
+        if (e.target.closest('#printDocumentBtn')) { window.print(); return; }
+        if (e.target.closest('#refreshBilan')) { renderBilan(); setStatus('Bilan financier réactualisé.', 'success'); return; }
 
-    async function init() {
-      resetFamilyForm();
-      resetAidForm();
-      resetDonationForm();
-      resetMemberForm();
-      resetLoanForm();
-      resetEventForm();
-      renderHeaderActions();
+        if (e.target.closest('#openBadgeDialog')) {
+          const dialog = $('#badgeDialog');
+          dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', '');
+          return;
+        }
+        if (e.target.closest('#closeBadgeDialog') || e.target.closest('#cancelBadgeDialog')) {
+          const dialog = $('#badgeDialog');
+          if (dialog.close) dialog.close(); else dialog.removeAttribute('open');
+          return;
+        }
+        if (e.target.closest('#generateSelectedBadge')) {
+          const selected = $('#badgeMemberSelect').value;
+          if (selected) {
+            const dialog = $('#badgeDialog');
+            if (dialog.close) dialog.close(); else dialog.removeAttribute('open');
+            printMemberCard(selected);
+          }
+          return;
+        }
+        if (e.target.closest('#closeEventPhotosDialog')) { closeEventPhotosDialog(); return; }
+
+        const photoDelBtn = e.target.closest('[data-delete-event-photo]');
+        if (photoDelBtn) {
+          const photoId = photoDelBtn.dataset.deleteEventPhoto;
+          await commitMutation(photoDelBtn, () => {
+            const ev = state.events.find(item => item.id === activePhotoEventId);
+            if (ev) ev.photos = (ev.photos || []).filter(p => p.id !== photoId);
+          }, 'Photo supprimée.');
+          renderEventPhotosDialog();
+        }
+      });
+
+// Formulaires
+      $('#familyForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const familyData = {
+          id: nextId(state.families, 'FAM'),
+          date: $('#familyDate').value,
+          name: $('#familyName').value.trim(),
+          situation: $('#familySituation').value,
+          phone: $('#familyPhone').value.trim(),
+          address: $('#familyAddress').value.trim(),
+          members: collectFamilyMembers(),
+          documents: {
+            home: $('#docHome').files[0]?.name || null,
+            family: $('#docFamily').files[0]?.name || null,
+            cnas: $('#docCnas').files[0]?.name || null,
+            casnos: $('#docCasnos').files[0]?.name || null
+          }
+        };
+        const ok = await commitMutation(submitBtn, () => { state.families.unshift(familyData); }, 'Famille enregistrée avec succès.');
+        if (ok) { this.reset(); $('#familyFormPanel').classList.add('hidden'); }
+      });
+
+      $('#aidForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const type = $('#aidType').value;
+        const aidData = {
+          id: nextId(state.familyAids, 'AID'),
+          date: $('#aidDate').value,
+          familyName: $('#aidFamilyName').value.trim(),
+          type,
+          amount: type === 'financial' ? Number($('#aidAmount').value) || 0 : 0,
+          description: type === 'other' ? $('#aidDescription').value.trim() : ''
+        };
+        const ok = await commitMutation(submitBtn, () => { state.familyAids.unshift(aidData); }, 'Aide enregistrée.');
+        if (ok) { this.reset(); $('#aidFormPanel').classList.add('hidden'); }
+      });
+
+      $('#donationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const type = $('#donationType').value;
+        const destType = $('#donationDestination').value;
+        let dest = '';
+        if (destType === 'family') dest = $('#donationFamilyDestination').value;
+        else if (destType === 'event') dest = $('#donationEventDestination').value;
+        else if (destType === 'other') dest = $('#donationOtherDestination').value.trim();
+
+        const donationData = {
+          id: nextId(state.donations, 'DON'),
+          date: $('#donationDate').value,
+          donor: $('#donorName').value.trim(),
+          type,
+          amount: type === 'financial' ? Number($('#donationAmount').value) || 0 : 0,
+          description: type === 'nature' ? $('#donationDescription').value.trim() : '',
+          quantity: type === 'nature' ? Number($('#donationQuantity').value) || 1 : 0,
+          destinationType: destType,
+          destination: dest
+        };
+        const ok = await commitMutation(submitBtn, () => { state.donations.unshift(donationData); }, 'Don enregistré.');
+        if (ok) { this.reset(); $('#donationFormPanel').classList.add('hidden'); }
+      });
+
+      $('#memberForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const memberData = {
+          id: nextId(state.members, 'ADH'),
+          lastName: $('#memberLastName').value.trim(),
+          firstName: $('#memberFirstName').value.trim(),
+          birthDate: $('#memberBirthDate').value,
+          mobile: $('#memberMobile').value.trim(),
+          profession: $('#memberProfession').value.trim(),
+          address: $('#memberAddress').value.trim(),
+          joinedAt: today()
+        };
+        const ok = await commitMutation(submitBtn, () => { state.members.unshift(memberData); }, 'Adhérent enregistré.');
+        if (ok) { this.reset(); $('#memberFormPanel').classList.add('hidden'); }
+      });
+
+      $('#loanForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const loanData = {
+          id: nextId(state.loans, 'PRT'),
+          material: $('#loanMaterial').value.trim(),
+          borrower: $('#loanBorrower').value.trim(),
+          loanDate: $('#loanDate').value,
+          dueDate: $('#loanDueDate').value,
+          returnedAt: null
+        };
+        const ok = await commitMutation(submitBtn, () => { state.loans.unshift(loanData); }, 'Prêt enregistré.');
+        if (ok) { this.reset(); $('#loanFormPanel').classList.add('hidden'); }
+      });
+
+      $('#eventForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const eventData = {
+          id: nextId(state.events, 'EVT'),
+          date: $('#eventDate').value,
+          name: $('#eventName').value.trim(),
+          budget: Number($('#eventBudget').value) || 0,
+          responsible: $('#eventResponsible').value.trim(),
+          description: $('#eventDescription').value.trim(),
+          expenses: collectExpenses(),
+          photos: []
+        };
+        const ok = await commitMutation(submitBtn, () => { state.events.unshift(eventData); }, 'Dossier d’événement créé.');
+        if (ok) { this.reset(); $('#eventFormPanel').classList.add('hidden'); }
+      });
+
+      // Événements dynamiques sur champs
+      $('#aidType').addEventListener('change', e => {
+        const isFin = e.target.value === 'financial';
+        $('#aidAmountField').classList.toggle('hidden', !isFin);
+        $('#aidDescriptionField').classList.toggle('hidden', isFin);
+      });
+
+      $('#donationType').addEventListener('change', e => {
+        const isFin = e.target.value === 'financial';
+        $('#donationAmountField').classList.toggle('hidden', !isFin);
+        $('#donationDescriptionField').classList.toggle('hidden', isFin);
+        $('#donationQuantityField').classList.toggle('hidden', isFin);
+      });
+
+      $('#donationDestination').addEventListener('change', e => {
+        const val = e.target.value;
+        $('#donationFamilyDestinationField').classList.toggle('hidden', val !== 'family');
+        $('#donationEventDestinationField').classList.toggle('hidden', val !== 'event');
+        $('#donationOtherDestinationField').classList.toggle('hidden', val !== 'other');
+      });
+
+      $('#eventBudget').addEventListener('input', updateEventCalculation);
+      $('#expenseRows').addEventListener('input', updateEventCalculation);
+
+      $('#familyMonthFilter').addEventListener('change', renderFamilies);
+      $('#familyYearFilter').addEventListener('change', renderFamilies);
+
+      $('#saveEventPhotos').addEventListener('click', async function() {
+        const input = $('#eventPhotoFiles');
+        const files = [...(input.files || [])];
+        if (!files.length) { setPhotoDialogMessage('Veuillez sélectionner au moins une image.', 'error'); return; }
+        const event = state.events.find(item => item.id === activePhotoEventId);
+        if (!event) return;
+        event.photos = event.photos || [];
+        if (event.photos.length + files.length > 10) { setPhotoDialogMessage('Limite atteinte : 10 photos maximum par événement.', 'error'); return; }
+
+        this.disabled = true;
+        setPhotoDialogMessage('Compression et traitement des photos en cours...', '');
+        try {
+          const compressedList = [];
+          for (const file of files) {
+            const compressed = await compressEventPhoto(file);
+            compressedList.push(compressed);
+          }
+          await commitMutation(this, () => {
+            event.photos.push(...compressedList);
+          }, 'Photos enregistrées.');
+          input.value = '';
+          setPhotoDialogMessage(`${compressedList.length} photo(s) ajoutée(s).`, 'success');
+          renderEventPhotosDialog();
+        } catch (err) {
+          setPhotoDialogMessage(err.message || 'Échec du traitement des photos.', 'error');
+        } finally {
+          this.disabled = false;
+        }
+      });
+
+      // Initialiser les dates par défaut
+      $('#familyDate').value = today();
+      $('#aidDate').value = today();
+      $('#donationDate').value = today();
+      $('#loanDate').value = today();
+      $('#eventDate').value = today();
+    }
+
+    async function initApp() {
+      setupEventListeners();
       await loadState();
       renderAll();
+      switchTab('families');
     }
-    init();
+
+    document.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
 </html>
