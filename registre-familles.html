@@ -6,6 +6,9 @@
 <title>Mostaganem Bénévole — Registre des dossiers familiaux</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Charger le SDK Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
   :root{
     --bg: #eceff1;
@@ -2416,5 +2419,29 @@ document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closePanel(); }
 loadFamilies();
 document.getElementById('headerLogo').src = LOGO_DATA_URI;
 </script>
+<script>
+  // 1. Initialiser Supabase avec tes clés
+  const SUPABASE_URL = 'TON_URL_SUPABASE';
+  const SUPABASE_KEY = 'TA_CLE_ANON_PUBLIC';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // 2. Exemple pour récuperer les familles depuis la base de données
+  async function chargerFamilles() {
+    const { data: familles, error } = await supabase
+      .from('familles')
+      .select('*');
+
+    if (error) {
+      console.error('Erreur lors du chargement :', error);
+    } else {
+      console.log('Données reçues :', familles);
+      // Ici tu peux insérer le code pour afficher 'familles' dans ton tableau HTML
+    }
+  }
+
+  // Appeler la fonction au chargement
+  chargerFamilles();
+</script>
+
 </body>
 </html>
