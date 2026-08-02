@@ -881,11 +881,12 @@ function nextFamilyId(){
   return `FAM-${year}-${String(next).padStart(3,'0')}`;
 }
 
-function openDetail(id){
+function openDetail(id) {
   viewingId = id;
   editingId = null;
-  const f = families.find(x=>x.famille_id===id);
-  if(!f) return;
+  const f = families.find(x => x.famille_id === id);
+  if (!f) return;
+
   panel.innerHTML = `
     <div class="panel-head">
       <h2>${escapeHtml(f.nom_famille)}</h2>
@@ -894,27 +895,27 @@ function openDetail(id){
     <div class="panel-body">
       <div class="detail-row"><span>N° Dossier</span><span>${escapeHtml(f.famille_id)}</span></div>
       <div class="detail-row"><span>Inscription</span><span>${fmtDate(f.date_inscription)}</span></div>
-      <div class="detail-row"><span>Situation</span><span>${escapeHtml(f.situation_familiale||'—')}</span></div>
-      <div class="detail-row"><span>Adresse</span><span>${escapeHtml(f.adresse||'—')}</span></div>
-      <div class="detail-row"><span>Téléphone</span><span>${escapeHtml(f.telephone||'—')}</span></div>
-      <div class="detail-row"><span>Membres</span><span>${(f.membres||[]).length}</span></div>
+      <div class="detail-row"><span>Situation</span><span>${escapeHtml(f.situation_familiale || '—')}</span></div>
+      <div class="detail-row"><span>Adresse</span><span>${escapeHtml(f.adresse || '—')}</span></div>
+      <div class="detail-row"><span>Téléphone</span><span>${escapeHtml(f.telephone || '—')}</span></div>
+      <div class="detail-row"><span>Membres</span><span>${(f.membres || []).length}</span></div>
 
       <div class="section-label">Composition du foyer</div>
-      ${(f.membres||[]).map(m=>`
+      ${(f.membres || []).map(m => `
         <div class="member-view">
           <div class="name">${escapeHtml(m.prenom)}</div>
-          <div class="role">${escapeHtml(m.role||'')}</div>
-          <div class="sub">Né(e) le ${fmtDate(m.date_naissance)} · ${age(m.date_naissance)}${m.annee_scolaire && m.annee_scolaire!=='N/A' ? ' · '+escapeHtml(m.annee_scolaire) : ''}</div>
+          <div class="role">${escapeHtml(m.role || '')}</div>
+          <div class="sub">Né(e) le ${fmtDate(m.date_naissance)} · ${age(m.date_naissance)}${m.annee_scolaire && m.annee_scolaire !== 'N/A' ? ' · ' + escapeHtml(m.annee_scolaire) : ''}</div>
         </div>
       `).join('') || '<p style="color:var(--muted);font-size:13px;">Aucun membre enregistré.</p>'}
 
       <div class="section-label">Documents</div>
-      ${(f.documents||[]).map(d=>`
+      ${(f.documents || []).map(d => `
         <div class="member-view">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
             ${d.photo_data ? `<img src="${d.photo_data}" class="doc-thumb" alt="Aperçu du document">` : ''}
             <div style="flex:1;">
-              <div class="name" style="font-size:14.5px;">${escapeHtml(DOC_TYPES[d.type_document]||d.type_document||'Document')}</div>
+              <div class="name" style="font-size:14.5px;">${escapeHtml(DOC_TYPES[d.type_document] || d.type_document || 'Document')}</div>
               <div class="sub">${d.nom_fichier ? escapeHtml(d.nom_fichier) + ' · scanné le ' + fmtDate(d.date_scan) : 'Aucun fichier'}</div>
             </div>
             <span class="badge" style="background:${d.nom_fichier ? '#e9efee' : '#f6e7e6'};color:${d.nom_fichier ? 'var(--pine-dark)' : 'var(--stamp)'};">${d.nom_fichier ? 'Déposé' : 'Manquant'}</span>
@@ -922,16 +923,21 @@ function openDetail(id){
         </div>
       `).join('') || '<p style="color:var(--muted);font-size:13px;">Aucun document suivi.</p>'}
 
-      <!-- Suite des documents et des boutons d'actions -->
       <div class="panel-actions">
         <button class="btn-secondary" id="editFamilyBtn">Éditer le dossier</button>
         <button class="btn-danger" id="deleteFamilyBtn">Supprimer</button>
       </div>
     </div>
-  </div>
-</div>
   `;
+
+  // Écouteurs d'événements
   document.getElementById('closePanel').addEventListener('click', closePanel);
+  
+  // N'oubliez pas d'attacher les écouteurs pour les boutons d'action !
+  document.getElementById('editFamilyBtn').addEventListener('click', () => editFamily(id));
+  document.getElementById('deleteFamilyBtn').addEventListener('click', () => deleteFamily(id));
+}
+
   document.getElementById('printBtn').addEventListener('click', ()=>printFamily(f.famille_id));
   document.getElementById('editBtn').addEventListener('click', ()=>openForm(f.famille_id));
   document.getElementById('deleteBtn').addEventListener('click', ()=>deleteFamily(f.famille_id));
