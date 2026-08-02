@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0B3B37">
+  <meta name="description" content="Registre administratif de l'association Mostaganem Bénévole">
+  <link id="appFavicon" rel="icon" href="">
+  <title>Mostaganem Bénévole - Registre administratif</title>
+  <!-- Charger le SDK Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --paper: #FAF8F3;
+      --paper-deep: #F1EDE3;
+      --white: #FFFFFF;
+      --ink: #16302E;
+      --ink-soft: #4A625F;
+      --teal: #0F6B62;
+      --teal-dark: #0B3B37;
+      --teal-pale: #DDEDE9;
+      --line: #D9D4C8;
+      --amber: #B7791F;
+      --amber-pale: #FEF3C7;
+      --indigo: #4F46A5;
+      --indigo-pale: #E8E7FF;
+      --emerald: #147D64;
+      --emerald-pale: #DDF4EA;
+      --sky: #18769A;
+      --sky-pale: #DDF2FA;
+      --red: #B83A35;
+      --red-pale: #FBE5E2;
+      --violet: #7651A8;
+      --violet-pale: #EEE7FA;
+      --shadow: 0 14px 36px rgba(22, 48, 46, 0.08);
+      --sidebar: 276px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; }
+    h1, h2, h3, .brand-name, .document-title {
+      font-family: Georgia, "Times New Roman", serif;
+      letter-spacing: -0.02em;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    .hidden { display: none !important; }
+    .muted { color: var(--ink-soft); }
+    .text-right { text-align: right; }
+    .nowrap { white-space: nowrap; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .icon-sm { width: 16px; height: 16px; }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: var(--sidebar);
+      padding: 25px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      color: #F8FBF9;
+      background: var(--teal-dark);
+      z-index: 40;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    .sidebar::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      right: -150px;
+      bottom: 60px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 50%;
+      box-shadow: 0 0 0 34px rgba(255,255,255,.025), 0 0 0 76px rgba(255,255,255,.018);
+      pointer-events: none;
+    }
+    .brand {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 0 5px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.13);
+    }
+    .brand-seal {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid rgba(255,255,255,.9);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.25);
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+    .brand-name { font-size: 22px; line-height: 1.05; margin: 0 0 5px; color: #fff; }
+    .brand-subtitle { font-size: 11px; color: #BFD8D4; letter-spacing: .08em; text-transform: uppercase; }
+    .sidebar-nav { position: relative; z-index: 1; display: grid; gap: 7px; margin-top: 28px; }
+    .nav-button.mobile-print { display: none; }
+    .nav-button {
+      border: 0;
+      background: transparent;
+      color: #CDE0DD;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      transition: background .2s ease, color .2s ease, transform .2s ease;
+    }
+    .nav-button:hover { background: rgba(255,255,255,.08); color: #fff; transform: translateX(2px); }
+    .nav-button.active { background: #F7F4EC; color: var(--teal-dark); font-weight: 700; }
+    .sidebar-footer { position: relative; z-index: 1; margin-top: auto; }
+    .sidebar-note { margin: 0 5px 12px; color: #9EBDB8; font-size: 11px; }
+    .sidebar .btn-dark { width: 100%; background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.18); }
+    .sidebar .btn-dark:hover { background: rgba(255,255,255,.17); }
+
+    .main { margin-left: var(--sidebar); min-height: 100vh; }
+    .main-header {
+      min-height: 138px;
+      padding: 29px clamp(24px, 4vw, 58px) 23px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 30px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(250,248,243,.93);
+      backdrop-filter: blur(8px);
+    }
+    .page-kicker { margin: 0 0 5px; color: var(--teal); font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    #pageTitle { font-size: clamp(29px, 3.1vw, 42px); line-height: 1.05; margin: 0 0 7px; }
+    #pageDescription { color: var(--ink-soft); margin: 0; max-width: 680px; }
+    .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; flex-wrap: wrap; }
+    .content { padding: 22px clamp(24px, 4vw, 58px) 60px; max-width: 1660px; margin: 0 auto; }
+
+    .status-banner {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 13px;
+      margin-bottom: 19px;
+      color: var(--ink-soft);
+      background: #F2F0E9;
+      border-left: 3px solid #A49E90;
+    }
+    .status-banner.success { background: var(--teal-pale); color: var(--teal-dark); border-color: var(--teal); }
+    .status-banner.warning { background: var(--amber-pale); color: #75510F; border-color: var(--amber); }
+    .status-banner.error { background: var(--red-pale); color: #842823; border-color: var(--red); }
+    .status-banner.loading .icon { animation: spin 1.1s linear infinite; }
+
+    .btn {
+      border: 1px solid transparent;
+      min-height: 40px;
+      padding: 9px 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 750;
+      font-size: 13px;
+      text-decoration: none;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, opacity .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(15,107,98,.28); outline-offset: 2px; }
+    .btn:disabled { opacity: .55; cursor: wait; transform: none; }
+    .btn-primary { color: #fff; background: var(--teal); box-shadow: 0 5px 14px rgba(15,107,98,.16); }
+    .btn-primary:hover { background: #0B5C54; }
+    .btn-dark { color: #fff; background: var(--ink); border-color: var(--ink); }
+    .btn-dark:hover { background: #0C2422; }
+    .btn-secondary { color: var(--ink); background: transparent; border-color: #AFA99D; }
+    .btn-secondary:hover { background: #F0ECE3; }
+    .btn-danger { color: var(--red); background: transparent; border-color: #E3B3AF; }
+    .btn-danger:hover { background: var(--red-pale); }
+    .btn-small { min-height: 32px; padding: 6px 9px; font-size: 12px; }
+    .icon-button { width: 34px; min-height: 32px; padding: 6px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 23px; }
+    .stats-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stat {
+      position: relative;
+      min-height: 116px;
+      padding: 20px 21px;
+      overflow: hidden;
+      background: var(--white);
+      border-top: 3px solid var(--teal);
+      box-shadow: 0 8px 22px rgba(22,48,46,.055);
+    }
+    .stat::after { content: ""; position: absolute; width: 78px; height: 78px; right: -24px; bottom: -30px; background: currentColor; opacity: .08; border-radius: 50%; }
+    .stat.teal { color: var(--teal); border-color: var(--teal); }
+    .stat.amber { color: var(--amber); border-color: var(--amber); }
+    .stat.indigo { color: var(--indigo); border-color: var(--indigo); }
+    .stat.emerald { color: var(--emerald); border-color: var(--emerald); }
+    .stat.sky { color: var(--sky); border-color: var(--sky); }
+    .stat.red { color: var(--red); border-color: var(--red); }
+    .stat.violet { color: var(--violet); border-color: var(--violet); }
+    .stat-label { display: block; color: var(--ink-soft); font-size: 12px; font-weight: 750; text-transform: uppercase; letter-spacing: .06em; }
+    .stat-value { display: block; margin-top: 8px; color: currentColor; font-family: Georgia, "Times New Roman", serif; font-size: 29px; line-height: 1; font-weight: 700; }
+
+    .form-panel {
+      margin-bottom: 24px;
+      background: #FFFDF9;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      animation: reveal .25s ease both;
+    }
+    .form-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 19px 22px; border-bottom: 1px solid var(--line); }
+    .form-panel-header h2 { margin: 0; font-size: 22px; }
+    .form-body { padding: 23px 22px; }
+    .form-section + .form-section { border-top: 1px solid var(--line); margin-top: 25px; padding-top: 25px; }
+    .section-heading { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; }
+    .section-number { width: 27px; height: 27px; display: grid; place-items: center; color: #fff; background: var(--teal); border-radius: 50%; font-weight: 800; font-size: 12px; }
+    .section-heading h3 { margin: 0; font-size: 18px; }
+    .form-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 15px; }
+    .field { grid-column: span 4; min-width: 0; }
+    .field.span-6 { grid-column: span 6; }
+    .field.span-8 { grid-column: span 8; }
+    .field.span-12 { grid-column: 1 / -1; }
+    label { display: block; margin-bottom: 6px; color: var(--ink); font-size: 12px; font-weight: 800; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #C9C4B8;
+      background: #FFF;
+      color: var(--ink);
+      border-radius: 4px;
+      padding: 10px 11px;
+      outline: none;
+      transition: border .18s ease, box-shadow .18s ease;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(15,107,98,.11); }
+    textarea { min-height: 93px; resize: vertical; }
+    input[type="file"] { padding: 8px; background: var(--paper); font-size: 12px; }
+    .field-note { color: var(--ink-soft); font-size: 11px; margin: 6px 0 0; }
+    .form-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 22px; }
+
+    .dynamic-table { width: 100%; border-collapse: collapse; }
+    .dynamic-table th { color: var(--ink-soft); background: var(--paper-deep); padding: 8px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+    .dynamic-table td { padding: 7px 5px; border-bottom: 1px solid #E9E5DC; vertical-align: middle; }
+    .dynamic-table input, .dynamic-table select { min-width: 120px; padding: 8px; }
+    .dynamic-toolbar { margin-top: 11px; }
+    .calculation-strip { display: flex; justify-content: flex-end; gap: 28px; align-items: center; margin-top: 14px; padding: 13px 15px; background: var(--paper-deep); }
+    .calculation-strip span { color: var(--ink-soft); font-size: 12px; }
+    .calculation-strip strong { color: var(--ink); font-size: 17px; }
+
+    .registry-section { background: rgba(255,255,255,.55); border: 1px solid var(--line); }
+    .registry-toolbar { min-height: 65px; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--line); }
+    .registry-toolbar h2 { margin: 0; font-size: 21px; }
+    .filters { display: flex; align-items: center; gap: 9px; }
+    .filters select { width: auto; min-width: 130px; padding: 8px 10px; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    .data-table th { padding: 11px 13px; color: #5B6D6A; background: #F0EDE5; border-bottom: 1px solid var(--line); font-size: 11px; text-align: left; text-transform: uppercase; letter-spacing: .055em; white-space: nowrap; }
+    .data-table td { padding: 13px; border-bottom: 1px solid #E4E0D7; vertical-align: middle; }
+    .data-table tbody tr { transition: background .15s ease; }
+    .data-table tbody tr:hover { background: #FFF; }
+    .data-table tbody tr:last-child td { border-bottom: 0; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 800; color: var(--teal); }
+    .actions-cell { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .empty-state { padding: 43px 20px; text-align: center; color: var(--ink-soft); }
+    .empty-state .icon { width: 31px; height: 31px; margin-bottom: 8px; color: #8FA39F; }
+    .empty-state strong { display: block; color: var(--ink); font-family: Georgia, "Times New Roman", serif; font-size: 19px; margin-bottom: 3px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      line-height: 1.2;
+      font-weight: 800;
+      white-space: nowrap;
+      background: #EAE7DF;
+      color: var(--ink-soft);
+    }
+    .badge.teal, .badge.emerald { background: var(--emerald-pale); color: var(--emerald); }
+    .badge.sky { background: var(--sky-pale); color: var(--sky); }
+    .badge.violet { background: var(--violet-pale); color: var(--violet); }
+    .badge.amber { background: var(--amber-pale); color: #8A5C13; }
+    .badge.red { background: var(--red-pale); color: var(--red); }
+    .positive { color: var(--emerald); font-weight: 850; }
+    .negative { color: var(--red); font-weight: 850; }
+
+    dialog {
+      width: min(480px, calc(100vw - 30px));
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      color: var(--ink);
+      background: #FFFDF9;
+      box-shadow: 0 25px 70px rgba(11,59,55,.28);
+    }
+    dialog::backdrop { background: rgba(8,34,32,.62); backdrop-filter: blur(3px); }
+    .dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 17px 19px; border-bottom: 1px solid var(--line); }
+    .dialog-header h2 { margin: 0; font-size: 21px; }
+    .dialog-body { padding: 20px; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; }
+    .photo-dialog { width: min(920px, calc(100vw - 30px)); max-height: calc(100vh - 30px); }
+    .photo-dialog .dialog-body { max-height: calc(100vh - 105px); overflow-y: auto; }
+    .photo-upload-bar { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .photo-upload-bar label { margin-bottom: 6px; }
+    .photo-dialog-message { min-height: 21px; margin: 10px 0 0; color: var(--ink-soft); font-size: 12px; }
+    .photo-dialog-message.error { color: var(--red); font-weight: 700; }
+    .photo-dialog-message.success { color: var(--emerald); font-weight: 700; }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 13px; margin-top: 18px; }
+    .photo-item { margin: 0; overflow: hidden; background: #fff; border: 1px solid var(--line); }
+    .photo-item img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--paper-deep); }
+    .photo-item-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px; }
+    .photo-item-name { min-width: 0; color: var(--ink-soft); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .photo-empty { grid-column: 1 / -1; padding: 34px 15px; color: var(--ink-soft); background: var(--paper-deep); text-align: center; }
+
+    #printArea {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      overflow: auto;
+      background: #D7D4CC;
+      padding: 78px 24px 40px;
+    }
+    #printArea.visible { display: block; }
+    .print-toolbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 10px 24px;
+      background: var(--teal-dark);
+      color: #fff;
+      z-index: 102;
+      box-shadow: 0 5px 20px rgba(0,0,0,.2);
+    }
+    .print-toolbar strong { font-family: Georgia, "Times New Roman", serif; font-size: 18px; }
+    .print-toolbar-actions { display: flex; gap: 8px; }
+    .print-document {
+      width: min(210mm, 100%);
+      min-height: 270mm;
+      margin: 0 auto;
+      padding: 16mm 15mm;
+      background: white;
+      color: #172B29;
+      box-shadow: 0 10px 35px rgba(0,0,0,.16);
+      font-size: 12px;
+    }
+    .document-head { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 15px; padding-bottom: 13px; border-bottom: 2px solid var(--teal-dark); text-align: left; }
+    .document-org { color: var(--teal-dark); font-family: Georgia, "Times New Roman", serif; font-size: 18px; font-weight: 700; }
+    .document-meta { margin-top: 2px; color: #566D69; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+    .document-code { font-family: ui-monospace, monospace; font-size: 11px; font-weight: 800; }
+    .document-title { margin: 20px 0 6px; text-align: center; text-transform: uppercase; font-size: 23px; }
+    .document-subtitle { margin-bottom: 21px; color: #566D69; text-align: center; }
+    .doc-section { margin-top: 19px; }
+    .doc-section h3 { margin-bottom: 9px; padding-bottom: 5px; border-bottom: 1px solid #9EB0AD; color: var(--teal-dark); font-size: 16px; }
+    .doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 25px; }
+    .doc-field { padding: 5px 0; border-bottom: 1px dotted #BFC7C5; }
+    .doc-field span { display: block; color: #637572; font-size: 10px; text-transform: uppercase; }
+    .doc-field strong { font-size: 12px; }
+    .doc-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .doc-table th, .doc-table td { border: 1px solid #AEBAB8; padding: 7px 8px; text-align: left; }
+    .doc-table th { background: #E8EFED; color: var(--teal-dark); font-size: 10px; text-transform: uppercase; }
+    .doc-total { width: 54%; margin: 16px 0 0 auto; }
+    .doc-total-row { display: flex; justify-content: space-between; padding: 7px 4px; border-bottom: 1px solid #BCC6C4; }
+    .doc-total-row.final { font-size: 15px; font-weight: 850; border-bottom: 2px solid var(--teal-dark); }
+    .engagement { padding: 13px 15px; background: #F2F5F4; border-left: 3px solid var(--teal); line-height: 1.7; }
+    .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 34px; text-align: center; }
+    .signature-space { min-height: 105px; padding-top: 7px; border-top: 1px solid #6D7D7A; position: relative; }
+    .official-seal {
+      width: 108px;
+      height: 108px;
+      margin: 9px auto 0;
+      padding: 6px;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--teal-dark);
+      outline: 2px dashed var(--teal);
+      outline-offset: 4px;
+      border-radius: 50%;
+      transform: rotate(-5deg);
+    }
+    .official-seal span { max-width: 76px; color: var(--teal-dark); font-family: Georgia, "Times New Roman", serif; font-size: 11px; font-weight: 700; line-height: 1.2; text-align: center; text-transform: uppercase; }
+    .document-footer { margin-top: 28px; padding-top: 8px; border-top: 1px solid #BCC6C4; color: #687A77; font-size: 9px; text-align: center; }
+    .member-card {
+      width: 85.6mm;
+      height: 53.98mm;
+      position: relative;
+      overflow: hidden;
+      margin: 30px auto;
+      padding: 10mm 9mm 8mm;
+      color: #fff;
+      background: linear-gradient(135deg, #0B3B37 0%, #0F6B62 72%, #149484 100%);
+      border-radius: 4mm;
+      box-shadow: 0 15px 30px rgba(11,59,55,.25);
+    }
+    .member-card::before, .member-card::after { content: ""; position: absolute; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; }
+    .member-card::before { width: 62mm; height: 62mm; right: -30mm; top: -32mm; }
+    .member-card::after { width: 45mm; height: 45mm; right: -21mm; top: -23mm; }
+    .member-card-head { position: relative; display: flex; align-items: center; gap: 8px; z-index: 1; }
+    .member-card-brand { font-family: Georgia, "Times New Roman", serif; font-size: 5mm; line-height: 1; }
+    .member-card-kicker { margin-top: 2px; color: #BCE2DC; font-size: 2.4mm; text-transform: uppercase; letter-spacing: .12em; }
+    .member-card-id { position: absolute; right: 8mm; top: 10mm; font-family: ui-monospace, monospace; font-size: 3mm; }
+    .member-card-body { position: relative; z-index: 1; margin-top: 7mm; }
+    .member-card-name { font-family: Georgia, "Times New Roman", serif; font-size: 6mm; line-height: 1; font-weight: 700; text-transform: uppercase; }
+    .member-card-details { margin-top: 4mm; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm 6mm; color: #E8F5F2; font-size: 2.7mm; }
+    .member-card-details span { color: #9ED2CA; display: block; font-size: 2mm; text-transform: uppercase; }
+    .member-card-year { position: absolute; right: 8mm; bottom: 6mm; color: #C8E9E4; font-size: 2.4mm; z-index: 1; }
+
+    @keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+    @media (max-width: 1050px) {
+      .main-header { align-items: flex-start; flex-direction: column; }
+      .header-actions { justify-content: flex-start; }
+      .field { grid-column: span 6; }
+      .field.span-8 { grid-column: span 12; }
+    }
+    @media (max-width: 767px) {
+      .sidebar {
+        position: sticky;
+        inset: 0;
+        width: 100%;
+        height: auto;
+        padding: 9px 11px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: 8px;
+      }
+      .sidebar::after, .brand-subtitle, .sidebar-note { display: none; }
+      .brand { border: 0; padding: 0; gap: 7px; }
+      .brand-seal { width: 40px; height: 40px; border-width: 1px; }
+      .brand-name { max-width: 95px; margin: 0; font-size: 14px; }
+      .sidebar-nav { display: flex; gap: 5px; margin: 0; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+      .nav-button.mobile-print { display: flex; }
+      .sidebar-nav::-webkit-scrollbar { display: none; }
+      .nav-button { width: auto; flex: 0 0 auto; padding: 9px 10px; gap: 6px; white-space: nowrap; }
+      .sidebar-footer { display: none; }
+      .main { margin-left: 0; }
+      .main-header { min-height: auto; padding: 23px 17px 18px; gap: 17px; }
+      #pageTitle { font-size: 31px; }
+      .content { padding: 16px 13px 45px; }
+      .stats-grid, .stats-grid.two { grid-template-columns: 1fr; }
+      .stat { min-height: 92px; }
+      .field, .field.span-6, .field.span-8 { grid-column: 1 / -1; }
+      .form-body, .form-panel-header { padding-left: 15px; padding-right: 15px; }
+      .registry-toolbar { align-items: flex-start; flex-direction: column; }
+      .filters { width: 100%; }
+      .filters select { flex: 1; min-width: 0; }
+      .dynamic-table { min-width: 720px; }
+      .dynamic-table-wrap { overflow-x: auto; }
+      .calculation-strip { justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+      #printArea { padding: 70px 8px 20px; }
+      .print-toolbar { padding: 9px 11px; }
+      .print-toolbar strong { display: none; }
+      .print-document { padding: 10mm 8mm; }
+      .doc-grid { grid-template-columns: 1fr; }
+      .signature-grid { gap: 18px; }
+      .photo-upload-bar { grid-template-columns: 1fr; }
+      .photo-upload-bar .btn { width: 100%; }
+    }
+
+    @media print {
+      @page { size: A4; margin: 10mm; }
+      html, body { background: #fff !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .app-shell, .no-print { display: none !important; }
+      #printArea, #printArea.visible { display: block !important; position: static; padding: 0; background: #fff; overflow: visible; }
+      .print-document { width: 100%; min-height: auto; padding: 0; box-shadow: none; }
+      .member-card { box-shadow: none; margin-top: 35mm; }
+      .doc-section, .signature-grid, .member-card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+    <symbol id="i-family" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20M6 15h2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+    <symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-coins" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4M16 14h1v4"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m21 8-9 5-9-5 9-5 9 5Z"/><path d="m3 8 9 5 9-5v8l-9 5-9-5Z"/><path d="M12 13v8"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17V9"/><path d="M12 17v-4"/><path d="M16 17v-7"/><path d="M20 17v-1"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar no-print">
+      <div class="brand">
+        <img class="brand-seal association-logo" alt="Logo Mostaganem Bénévole">
+        <div>
+          <div class="brand-name">Mostaganem<br>Bénévole</div>
+          <div class="brand-subtitle">Registre associatif</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav" aria-label="Registres de l'association">
+        <button class="nav-button active" type="button" data-tab="families" aria-current="page"><svg class="icon"><use href="#i-family"></use></svg><span>Familles</span></button>
+        <button class="nav-button" type="button" data-tab="assistance"><svg class="icon"><use href="#i-file"></use></svg><span>Aides aux familles</span></button>
+        <button class="nav-button" type="button" data-tab="donations"><svg class="icon"><use href="#i-heart"></use></svg><span>Dons</span></button>
+        <button class="nav-button" type="button" data-tab="members"><svg class="icon"><use href="#i-users"></use></svg><span>Adhérents</span></button>
+        <button class="nav-button" type="button" data-tab="equipment"><svg class="icon"><use href="#i-box"></use></svg><span>Matériel</span></button>
+        <button class="nav-button" type="button" data-tab="events"><svg class="icon"><use href="#i-calendar"></use></svg><span>Événements</span></button>
+        <button class="nav-button" type="button" data-tab="bilan"><svg class="icon"><use href="#i-chart"></use></svg><span>Bilan</span></button>
+         <button class="nav-button mobile-print" type="button" id="mobileGlobalPrintBtn"><svg class="icon"><use href="#i-print"></use></svg><span>Imprimer</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <p class="sidebar-note" id="storageNote">Vérification du stockage...</p>
+        <button class="btn btn-dark" type="button" id="globalPrintBtn"><svg class="icon"><use href="#i-print"></use></svg>Impression globale</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="main-header no-print">
+        <div>
+          <p class="page-kicker">Administration officielle</p>
+          <h1 id="pageTitle">Familles bénéficiaires</h1>
+          <p id="pageDescription">Inscription, suivi de la composition des foyers et édition des fiches familiales.</p>
+        </div>
+        <div class="header-actions" id="headerActions"></div>
+      </header>
+
+      <div class="content">
+        <div class="status-banner loading no-print" id="statusBanner" role="status" aria-live="polite">
+          <svg class="icon"><use href="#i-loader"></use></svg>
+          <span>Chargement des registres...</span>
+        </div>
+
+        <section id="view-families" class="tab-view">
+          <div class="stats-grid">
+            <div class="stat teal"><span class="stat-label">Familles enregistrées</span><strong class="stat-value" id="statFamilies">0</strong></div>
+            <div class="stat amber"><span class="stat-label">Enfants scolarisés</span><strong class="stat-value" id="statSchoolChildren">0</strong></div>
+            <div class="stat indigo"><span class="stat-label">Personnes aidées</span><strong class="stat-value" id="statPeopleHelped">0</strong></div>
+          </div>
+
+          <section class="form-panel hidden no-print" id="familyFormPanel">
+            <div class="form-panel-header"><h2>Inscription d'une famille</h2><button class="btn btn-secondary btn-small" type="button" data-close-panel="familyFormPanel"><svg class="icon icon-sm"><use href="#i-close"></use></svg>Fermer</button></div>
+            <form class="form-body" id="familyForm">
+              <div class="form-section">
+                <div class="section-heading"><span class="section-number">1</span><h3>Informations générales</h3></div>
+                <div class="form-grid">
+                  <div class="field"><label for="familyDate">Date d'inscription</label><input type="date" id="familyDate" required></div>
+                  <div class="field"><label for="familyName">Nom de famille</label><input id="familyName" required placeholder="Ex. Benali"></div>
+                  <div class="field"><label for="familySituation">Situation familiale</label><select id="familySituation" required><option value="Marié(e)">Marié(e)</option><option value="Veuf / Veuve">Veuf / Veuve</option><option value="Divorcé(e)">Divorcé(e)</option><option value="Parent isolé">Parent isolé</option><option value="Handicapé(e) / Besoins spécifiques">Handicapé(e) / Besoins spécifiques</option></select></div>
+                  <div class="field"><label for="familyPhone">Téléphone</label><input type="tel" id="familyPhone" placeholder="05 / 06 / 07..."></div>
+                  <div class="field span-8"><label for="familyAddress">Adresse</label><input id="familyAddress" required placeholder="Commune, quartier, adresse"></div>
+                </div>
+              </div>
+              <div class="form-section">
+                <div class="section-heading"><span class="section-number">2</span><h3>Composition du foyer</h3></div>
+                <div class="dynamic-table-wrap">
+                  <table class="dynamic-table">
+                    <thead><tr><th>Prénom</th><th>Rôle</th><th>Date de naissance</th><th>Situation scolaire</th><th></th></tr></thead>
+                    <tbody id="familyMembersRows"></tbody>
+                  </table>
+                </div>
+                <div class="dynamic-toolbar"><button class="btn btn-secondary btn-small" type="button" id="addFamilyMember"><svg class="icon icon-sm"><use href="#i-plus"></use></svg>Ajouter un membre</button></div>
+              </div>
+              <div class="form-section">
+                <div class="section-heading"><span class="section-number">3</span><h3>Documents scannés</h3></div>
+                <p class="muted">Pour protéger les données, les fichiers ne sont pas stockés durablement. Seuls leur nom et leur présence sont mémorisés.</p>
+                <div class="form-grid">
+                  <div class="field span-6"><label for="docHome">Justificatif de domicile</label><input type="file" id="docHome" accept="image/*,.pdf"></div>
+                  <div class="field span-6"><label for="docFamily">Fiche familiale</label><input type="file" id="docFamily" accept="image/*,.pdf"></div>
+                  <div class="field span-6"><label for="docCnas">Attestation CNAS</label><input type="file" id="docCnas" accept="image/*,.pdf"></div>
+                  <div class="field span-6"><label for="docCasnos">Attestation CASNOS</label><input type="file" id="docCasnos" accept="image/*,.pdf"></div>
+                </div>
+              </div>
+              <div class="form-footer"><button type="button" class="btn btn-secondary" data-close-panel="familyFormPanel">Annuler</button><button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-save"></use></svg>Enregistrer la famille</button></div>
+            </form>
+          </section>
+
+          <section class="registry-section">
+            <div class="registry-toolbar"><h2>Registre des familles</h2><div class="filters no-print"><select id="familyMonthFilter" aria-label="Filtrer par mois"><option value="">Tous les mois</option></select><select id="familyYearFilter" aria-label="Filtrer par année"><option value="">Toutes les années</option></select></div></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Code</th><th>Date</th><th>Famille</th><th>Situation</th><th>Contact / Adresse</th><th>Foyer</th><th>Actions</th></tr></thead><tbody id="familiesTableBody"></tbody></table><div class="empty-state hidden" id="familiesEmpty"></div></div>
+          </section>
+        </section>
+
+        <section id="view-assistance" class="tab-view hidden">
+          <div class="stats-grid">
+            <div class="stat teal"><span class="stat-label">Aides enregistrées</span><strong class="stat-value" id="statFamilyAids">0</strong></div>
+            <div class="stat emerald"><span class="stat-label">Total des aides financières</span><strong class="stat-value" id="statFinancialAids">0 DA</strong></div>
+            <div class="stat sky"><span class="stat-label">Autres aides</span><strong class="stat-value" id="statOtherAids">0</strong></div>
+          </div>
+          <section class="form-panel hidden no-print" id="aidFormPanel">
+            <div class="form-panel-header"><h2>Enregistrer une aide familiale</h2><button class="btn btn-secondary btn-small" type="button" data-close-panel="aidFormPanel"><svg class="icon icon-sm"><use href="#i-close"></use></svg>Fermer</button></div>
+            <form class="form-body" id="aidForm">
+              <div class="form-grid">
+                <div class="field span-6"><label for="aidFamilyName">Nom de la famille</label><input id="aidFamilyName" list="aidFamilySuggestions" required placeholder="Ex. Famille Benali"><datalist id="aidFamilySuggestions"></datalist></div>
+                <div class="field"><label for="aidDate">Date de l'aide</label><input type="date" id="aidDate" required></div>
+                <div class="field"><label for="aidType">Type d'aide</label><select id="aidType"><option value="financial">Financière</option><option value="other">Autre</option></select></div>
+                <div class="field span-6" id="aidAmountField"><label for="aidAmount">Montant de l'aide (DA)</label><input type="number" min="0.01" step="0.01" id="aidAmount" inputmode="decimal"></div>
+                <div class="field span-6 hidden" id="aidDescriptionField"><label for="aidDescription">Description de l'aide</label><input id="aidDescription" placeholder="Ex. Panier alimentaire, vêtements, médicaments..."></div>
+              </div>
+              <div class="form-footer"><button type="button" class="btn btn-secondary" data-close-panel="aidFormPanel">Annuler</button><button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-save"></use></svg>Enregistrer l'aide</button></div>
+            </form>
+          </section>
+          <section class="registry-section">
+            <div class="registry-toolbar"><h2>Registre des aides aux familles</h2></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Code</th><th>Date</th><th>Famille</th><th>Type</th><th>Valeur / Description</th><th>Actions</th></tr></thead><tbody id="aidsTableBody"></tbody></table><div class="empty-state hidden" id="aidsEmpty"></div></div>
+          </section>
+        </section>
+
+        <section id="view-donations" class="tab-view hidden">
+          <div class="stats-grid two">
+            <div class="stat emerald"><span class="stat-label">Dons financiers</span><strong class="stat-value" id="statFinancialDonations">0 DA</strong></div>
+            <div class="stat sky"><span class="stat-label">Articles reçus en nature</span><strong class="stat-value" id="statNatureDonations">0</strong></div>
+          </div>
+          <section class="form-panel hidden no-print" id="donationFormPanel">
+            <div class="form-panel-header"><h2>Enregistrer un don</h2><button class="btn btn-secondary btn-small" type="button" data-close-panel="donationFormPanel"><svg class="icon icon-sm"><use href="#i-close"></use></svg>Fermer</button></div>
+            <form class="form-body" id="donationForm">
+              <div class="form-grid">
+                <div class="field"><label for="donationDate">Date</label><input type="date" id="donationDate" required></div>
+                <div class="field"><label for="donorName">Nom du donateur</label><input id="donorName" required></div>
+                <div class="field"><label for="donationType">Type de don</label><select id="donationType"><option value="financial">Financier</option><option value="nature">En nature</option></select></div>
+                <div class="field" id="donationAmountField"><label for="donationAmount">Montant (DA)</label><input type="number" min="0.01" step="0.01" id="donationAmount" inputmode="decimal"></div>
+                <div class="field span-6 hidden" id="donationDescriptionField"><label for="donationDescription">Description des articles</label><input id="donationDescription" placeholder="Ex. Couvertures, denrées..."></div>
+                <div class="field hidden" id="donationQuantityField"><label for="donationQuantity">Quantité</label><input type="number" min="1" step="1" id="donationQuantity" value="1"></div>
+                <div class="field"><label for="donationDestination">Destination du don</label><select id="donationDestination"><option value="stock">Stock général</option><option value="family">Aide à une famille</option><option value="event">Participation à un événement</option><option value="other">Autre</option></select></div>
+                <div class="field span-6 hidden" id="donationFamilyDestinationField"><label for="donationFamilyDestination">Famille bénéficiaire</label><select id="donationFamilyDestination"><option value="">Sélectionner une famille</option></select></div>
+                <div class="field span-6 hidden" id="donationEventDestinationField"><label for="donationEventDestination">Événement concerné</label><select id="donationEventDestination"><option value="">Sélectionner un événement</option></select></div>
+                <div class="field span-6 hidden" id="donationOtherDestinationField"><label for="donationOtherDestination">Préciser la destination</label><input id="donationOtherDestination" placeholder="Ex. Aide médicale, projet solidaire..."></div>
+              </div>
+              <div class="form-footer"><button type="button" class="btn btn-secondary" data-close-panel="donationFormPanel">Annuler</button><button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-save"></use></svg>Enregistrer le don</button></div>
+            </form>
+          </section>
+          <section class="registry-section">
+            <div class="registry-toolbar"><h2>Journal des dons</h2></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Reçu</th><th>Date</th><th>Donateur</th><th>Type</th><th>Valeur / Description</th><th>Destination</th><th>Actions</th></tr></thead><tbody id="donationsTableBody"></tbody></table><div class="empty-state hidden" id="donationsEmpty"></div></div>
+          </section>
+        </section>
+
+        <section id="view-members" class="tab-view hidden">
+          <div class="stats-grid"><div class="stat teal"><span class="stat-label">Adhérents et bénévoles inscrits</span><strong class="stat-value" id="statMembers">0</strong></div></div>
+          <section class="form-panel hidden no-print" id="memberFormPanel">
+            <div class="form-panel-header"><h2>Formulaire d'adhésion</h2><button class="btn btn-secondary btn-small" type="button" data-close-panel="memberFormPanel"><svg class="icon icon-sm"><use href="#i-close"></use></svg>Fermer</button></div>
+            <form class="form-body" id="memberForm">
+              <div class="form-grid">
+                <div class="field"><label for="memberLastName">Nom</label><input id="memberLastName" required></div>
+                <div class="field"><label for="memberFirstName">Prénom</label><input id="memberFirstName" required></div>
+                <div class="field"><label for="memberBirthDate">Date de naissance</label><input type="date" id="memberBirthDate" required></div>
+                <div class="field"><label for="memberMobile">Mobile</label><input type="tel" id="memberMobile" required></div>
+                <div class="field"><label for="memberProfession">Profession</label><input id="memberProfession"></div>
+                <div class="field span-12"><label for="memberAddress">Adresse</label><input id="memberAddress" required></div>
+              </div>
+              <div class="form-footer"><button type="button" class="btn btn-secondary" data-close-panel="memberFormPanel">Annuler</button><button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-save"></use></svg>Enregistrer l'adhérent</button></div>
+            </form>
+          </section>
+          <section class="registry-section">
+            <div class="registry-toolbar"><h2>Registre officiel des adhérents</h2></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Nom et prénom</th><th>Âge</th><th>Mobile</th><th>Profession</th><th>Adresse</th><th>Actions</th></tr></thead><tbody id="membersTableBody"></tbody></table><div class="empty-state hidden" id="membersEmpty"></div></div>
+          </section>
+        </section>
+
+        <section id="view-equipment" class="tab-view hidden">
+          <div class="stats-grid">
+            <div class="stat teal"><span class="stat-label">Dossiers de prêt</span><strong class="stat-value" id="statLoans">0</strong></div>
+            <div class="stat amber"><span class="stat-label">Matériel en prêt</span><strong class="stat-value" id="statActiveLoans">0</strong></div>
+            <div class="stat red"><span class="stat-label">Retours en retard</span><strong class="stat-value" id="statLateLoans">0</strong></div>
+          </div>
+          <section class="form-panel hidden no-print" id="loanFormPanel">
+            <div class="form-panel-header"><h2>Nouveau prêt de matériel sanitaire</h2><button class="btn btn-secondary btn-small" type="button" data-close-panel="loanFormPanel"><svg class="icon icon-sm"><use href="#i-close"></use></svg>Fermer</button></div>
+            <form class="form-body" id="loanForm">
+              <div class="form-grid">
+                <div class="field span-6"><label for="loanMaterial">Nom du matériel</label><input id="loanMaterial" list="loanMaterialSuggestions" required placeholder="Ex. Chaise roulante"><datalist id="loanMaterialSuggestions"><option value="Chaise roulante"></option><option value="Béquilles"></option><option value="Matelas orthopédique"></option><option value="Déambulateur"></option><option value="Lit médicalisé"></option></datalist></div>
+                <div class="field span-6"><label for="loanBorrower">Nom de l'emprunteur</label><input id="loanBorrower" required placeholder="Nom et prénom"></div>
+                <div class="field span-6"><label for="loanDate">Date de sortie</label><input type="date" id="loanDate" required></div>
+                <div class="field span-6"><label for="loanDueDate">Retour prévu du matériel</label><input type="date" id="loanDueDate" required></div>
+              </div>
+              <div class="form-footer"><button type="button" class="btn btn-secondary" data-close-panel="loanFormPanel">Annuler</button><button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-save"></use></svg>Enregistrer le prêt</button></div>
+            </form>
+          </section>
+          <section class="registry-section">
+            <div class="registry-toolbar"><h2>Registre des prêts de matériel</h2></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>Code</th><th>Matériel</th><th>Emprunteur</th><th>Sortie</th><th>Retour prévu</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="loansTableBody"></tbody></table><div class="empty-state hidden" id="loansEmpty"></div></div>
+          </section>
+        </section>
+
+        <section id="view-events" class="tab-view hidden">
+          <div class="stats-grid">
+            <div class="stat violet"><span class="stat-label">Dossiers d'événements</span><strong class="stat-value" id="statEvents">0</strong></div>
+            <div class="stat red"><span class="stat-label">Frais engagés</span><strong class="stat-value" id="statExpenses">0 DA</strong></div>
+            <div class="stat emerald"><span class="stat-label">Budget alloué</span><strong class="stat-value" id="statBudgets">0 DA</strong></div>
+          </div>
+          <section class="form-panel hidden no-print" id="eventFormPanel">
+            <div class="form-panel-header"><h2>Créer un dossier d'événement</h2><button class="btn btn-secondary btn-small" type="button" data-close-panel="eventFormPanel"><svg class="icon icon-sm"><use href="#i-close"></use></svg>Fermer</button></div>
+            <form class="form-body" id="eventForm">
+              <div class="form-grid">
+                <div class="field"><label for="eventDate">Date</label><input type="date" id="eventDate" required></div>
+                <div class="field"><label for="eventName">Nom de l'événement</label><input id="eventName" required></div>
+                <div class="field"><label for="eventBudget">Budget ou recette alloué(e) (DA)</label><input type="number" min="0" step="0.01" id="eventBudget" required inputmode="decimal"></div>
+                <div class="field span-6"><label for="eventResponsible">Responsable de la décharge</label><input id="eventResponsible" required></div>
+                <div class="field span-6"><label for="eventDescription">Description</label><textarea id="eventDescription" required></textarea></div>
+              </div>
+              <div class="form-section">
+                <div class="section-heading"><span class="section-number">1</span><h3>Détail des frais</h3></div>
+                <div class="dynamic-table-wrap">
+                  <table class="dynamic-table"><thead><tr><th>Description</th><th>Montant (DA)</th><th></th></tr></thead><tbody id="expenseRows"></tbody></table>
+                </div>
+                <div class="dynamic-toolbar"><button class="btn btn-secondary btn-small" type="button" id="addExpense"><svg class="icon icon-sm"><use href="#i-plus"></use></svg>Ajouter une ligne de frais</button></div>
+                <div class="calculation-strip"><span>Total des frais : <strong id="expenseTotalLive">0 DA</strong></span><span>Solde prévisionnel : <strong id="eventBalanceLive">0 DA</strong></span></div>
+              </div>
+              <div class="form-footer"><button type="button" class="btn btn-secondary" data-close-panel="eventFormPanel">Annuler</button><button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-save"></use></svg>Enregistrer le dossier</button></div>
+            </form>
+          </section>
+          <section class="registry-section">
+             <div class="registry-toolbar"><h2>Dossiers et décharges financières</h2></div>
+             <div class="table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Date / Événement</th><th>Responsable</th><th>Budget</th><th>Frais</th><th>Solde</th><th>Actions</th></tr></thead><tbody id="eventsTableBody"></tbody></table><div class="empty-state hidden" id="eventsEmpty"></div></div>
+           </section>
+         </section>
+
+         <section id="view-bilan" class="tab-view hidden">
+           <div class="stats-grid">
+             <div class="stat emerald"><span class="stat-label">Dons reçus</span><strong class="stat-value" id="bilanDons">0 DA</strong></div>
+             <div class="stat teal"><span class="stat-label">Aides versées</span><strong class="stat-value" id="bilanAides">0 DA</strong></div>
+             <div class="stat indigo"><span class="stat-label">Budget restant événements</span><strong class="stat-value" id="bilanBudget">0 DA</strong></div>
+             <div class="stat amber"><span class="stat-label">Prêts en cours</span><strong class="stat-value" id="bilanPrets">0</strong></div>
+           </div>
+           <div class="registry-section">
+             <div class="registry-toolbar"><h2>État financier général</h2><button class="btn btn-dark btn-small" type="button" id="refreshBilan"><svg class="icon icon-sm"><use href="#i-chart"></use></svg>Actualiser</button></div>
+             <div class="form-body">
+               <p class="muted">Ce bilan est calculé automatiquement à partir des registres de dons, d’aides, d’événements et de prêts. Il ne remplace pas une comptabilité certifiée.</p>
+               <div class="form-grid">
+                 <div class="field span-12"><strong>Solde net de l’association</strong><br><span id="bilanSolde" style="font-size:28px;font-family:Georgia, 'Times New Roman', serif;">0 DA</span></div>
+               </div>
+             </div>
+           </div>
+         </section>
+       </div>
+     </main>
+   </div>
+
+  <dialog id="badgeDialog" class="no-print">
+    <div class="dialog-header"><h2>Créer un badge de membre</h2><button class="btn btn-secondary icon-button" type="button" id="closeBadgeDialog" aria-label="Fermer"><svg class="icon"><use href="#i-close"></use></svg></button></div>
+    <div class="dialog-body"><label for="badgeMemberSelect">Adhérent</label><select id="badgeMemberSelect"></select><div class="dialog-actions"><button class="btn btn-secondary" type="button" id="cancelBadgeDialog">Annuler</button><button class="btn btn-primary" type="button" id="generateSelectedBadge"><svg class="icon"><use href="#i-card"></use></svg>Générer le badge</button></div></div>
+  </dialog>
+
+  <dialog id="eventPhotosDialog" class="photo-dialog no-print">
+    <div class="dialog-header"><h2 id="eventPhotosTitle">Photos de l'événement</h2><button class="btn btn-secondary icon-button" type="button" id="closeEventPhotosDialog" aria-label="Fermer"><svg class="icon"><use href="#i-close"></use></svg></button></div>
+    <div class="dialog-body">
+      <div class="photo-upload-bar">
+        <div><label for="eventPhotoFiles">Ajouter des photos</label><input type="file" id="eventPhotoFiles" accept="image/jpeg,image/png,image/webp" multiple><p class="field-note">Formats JPEG, PNG ou WebP. Maximum 10 photos par événement. Les images sont compressées avant la sauvegarde. Vérifiez que les personnes photographiées ont autorisé cet usage.</p></div>
+        <button class="btn btn-primary" type="button" id="saveEventPhotos"><svg class="icon"><use href="#i-save"></use></svg>Enregistrer les photos</button>
+      </div>
+      <p class="photo-dialog-message" id="eventPhotosMessage" aria-live="polite"></p>
+      <div class="photo-grid" id="eventPhotosGrid"></div>
+    </div>
+  </dialog>
+
+  <section id="printArea" aria-label="Aperçu du document imprimable">
+    <div class="print-toolbar no-print"><strong id="printPreviewTitle">Document officiel</strong><div class="print-toolbar-actions"><button class="btn btn-secondary" id="closePrintArea"><svg class="icon"><use href="#i-close"></use></svg>Fermer</button><button class="btn btn-primary" id="printDocumentBtn"><svg class="icon"><use href="#i-print"></use></svg>Imprimer</button></div></div>
+    <article class="print-document" id="printDocument"></article>
+  </section>
+
+  <script>
+    'use strict';
+
+    // Reproduction autonome du logo fourni, limitée à l'interface et au favicon.
+    const ASSOCIATION_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520">
+      <rect width="520" height="520" fill="#fff"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M108 192c46-84 124-126 229-119 28 2 54 11 73 22-38-5-73 0-100 17" stroke="#079640" stroke-width="12"/>
+        <path d="M174 312c-23-76 0-161 65-205 35-23 74-27 101-13-57 4-97 37-113 86" stroke="#79d818" stroke-width="15"/>
+        <path d="M260 216c-7 78-18 143-54 198 42-35 63-81 67-143 27 32 59 50 92 57-43-34-66-73-82-112" fill="#079640" stroke="#079640" stroke-width="5"/>
+        <circle cx="267" cy="198" r="22" fill="#079640" stroke="#079640" stroke-width="2"/>
+        <path d="M188 293c-28 3-58-14-72-44 31-2 57 12 72 44Z" fill="#7ddc19" stroke="#52bd20" stroke-width="3"/>
+        <path d="M322 280c22-28 56-38 89-27-20 30-52 40-89 27Z" fill="#7ddc19" stroke="#52bd20" stroke-width="3"/>
+        <path d="M136 421c79 28 190 31 273-5-63 50-205 57-273 5Z" fill="#079640" stroke="#079640" stroke-width="2"/>
+        <path d="M348 91c28-21 63-27 98-15-27 20-60 25-98 15Z" fill="#079640" stroke="#079640" stroke-width="2"/>
+      </g>
+      <g transform="translate(392 155)"><ellipse cx="0" cy="0" rx="18" ry="8" fill="#79d818" transform="rotate(-37)"/><ellipse cx="24" cy="45" rx="18" ry="8" fill="#0795b6" transform="rotate(-12)"/><ellipse cx="33" cy="92" rx="18" ry="8" fill="#ffcf00" transform="rotate(-7)"/><ellipse cx="18" cy="139" rx="18" ry="8" fill="#91c33a" transform="rotate(23)"/><ellipse cx="-8" cy="179" rx="18" ry="8" fill="#118cb4" transform="rotate(50)"/></g>
+      <text x="72" y="145" fill="#079640" font-family="cursive" font-size="55" font-style="italic" transform="rotate(-18 72 145)">Bénévole</text>
+      <text x="260" y="480" text-anchor="middle" fill="#050505" font-family="serif" font-size="48" direction="rtl">مستغانم</text>
+    </svg>`;
+
+    function utf8ToBase64(value) {
+      const bytes = new TextEncoder().encode(value);
+      let binary = '';
+      bytes.forEach(byte => binary += String.fromCharCode(byte));
+      return btoa(binary);
+    }
+    const LOGO_DATA_URI = `data:image/svg+xml;base64,${utf8ToBase64(ASSOCIATION_LOGO_SVG)}`;
+    document.querySelectorAll('.association-logo').forEach(img => img.src = LOGO_DATA_URI);
+    document.getElementById('appFavicon').href = LOGO_DATA_URI;
+
+    const STORAGE_KEY = 'mostaganem-benevole-registres-v1';
+    const initialState = { families: [], familyAids: [], donations: [], members: [], events: [], loans: [], sequences: {} };
+    let state = deepCloneInitialState();
+    let storageMode = 'memory';
+    let sharedApi = null;
+    let currentTab = 'families';
+    let activePhotoEventId = '';
+
+    const tabMeta = {
+      families: { title: 'Familles bénéficiaires', description: 'Inscription, suivi de la composition des foyers et édition des fiches familiales.' },
+      assistance: { title: 'Aides aux familles', description: 'Enregistrement des aides financières ou matérielles accordées aux familles.' },
+      donations: { title: 'Dons', description: 'Journal des contributions financières et des dons en nature, avec leur attribution.' },
+      members: { title: 'Adhérents & bénévoles', description: 'Registre officiel des membres, fiches individuelles et badges associatifs.' },
+      equipment: { title: 'Prêts de matériel', description: 'Suivi des sorties, retours prévus et bons de prêt du matériel sanitaire.' },
+       events: { title: 'Événements & décharges', description: 'Gestion des budgets, frais engagés et bilans de responsabilité financière.' },
+       bilan: { title: 'Bilan', description: 'Synthèse financière instantanée de l’association.' }
+     };
+
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+    const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+    const today = () => {
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+    };
+    const formatDate = value => {
+      const normalized = String(value || '');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return '-';
+      const date = new Date(`${normalized}T12:00:00`);
+      const [year, month, day] = normalized.split('-').map(Number);
+      if (Number.isNaN(date.getTime()) || date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) return '-';
+      return new Intl.DateTimeFormat('fr-DZ', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+    };
+    const formatMoney = value => `${new Intl.NumberFormat('fr-DZ', { maximumFractionDigits: 2 }).format(Number(value) || 0)} DA`;
+    const total = values => values.reduce((sum, value) => sum + (Number(value) || 0), 0);
+    const deepCopy = value => JSON.parse(JSON.stringify(value));
+    function deepCloneInitialState() { return JSON.parse(JSON.stringify(initialState)); }
+    const isPositiveNumber = value => Number.isFinite(Number(value)) && Number(value) > 0;
+    const dateSlice = (value, start, end) => String(value || '').slice(start, end);
+    const isIsoDate = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || '')) && formatDate(value) !== '-';
+
+    function validationError(message, selector) {
+      setStatus(message, 'error', true);
+      const field = selector ? $(selector) : null;
+      if (field) field.focus();
+      return false;
+    }
+
+    function icon(name, className = '') {
+      return `<svg class="icon ${className}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+    }
+
+    function setStatus(message, type = 'success', persistent = false) {
+      clearTimeout(setStatus.timer);
+      const banner = $('#statusBanner');
+      banner.className = `status-banner ${type} no-print`;
+      banner.innerHTML = `${icon(type === 'loading' ? 'loader' : 'info')}<span>${esc(message)}</span>`;
+      if (!persistent && type === 'success') {
+        setStatus.timer = setTimeout(() => {
+          const label = storageMode === 'shared' ? 'Stockage partagé actif' : storageMode === 'local' ? 'Sauvegarde locale active' : 'Mode temporaire sans persistance';
+          setStatus(label, storageMode === 'memory' ? 'warning' : 'success', true);
+        }, 2600);
+      }
+    }
+
+    function normalizeState(raw) {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!parsed || typeof parsed !== 'object') return deepCloneInitialState();
+      const records = key => Array.isArray(parsed[key]) ? parsed[key].filter(item => item && typeof item === 'object' && !Array.isArray(item)) : [];
+      const families = records('families').map(family => ({ ...family, members: Array.isArray(family.members) ? family.members.filter(member => member && typeof member === 'object') : [] }));
+      const events = records('events').map(event => ({
+        ...event,
+        expenses: Array.isArray(event.expenses) ? event.expenses.filter(expense => expense && typeof expense === 'object') : [],
+        photos: Array.isArray(event.photos) ? event.photos.filter(photo => photo && typeof photo === 'object' && typeof photo.data === 'string' && photo.data.startsWith('data:image/')) : []
+      }));
+      return {
+        families,
+        familyAids: records('familyAids'),
+        donations: records('donations'),
+        members: records('members'),
+        events,
+        loans: records('loans'),
+        sequences: parsed.sequences && typeof parsed.sequences === 'object' && !Array.isArray(parsed.sequences) ? parsed.sequences : {}
+      };
+    }
+
+    function detectSharedApi() {
+      const candidates = [window.storage, window.sharedStorage, window.persistentStorage];
+      return candidates.find(api => api && typeof api.get === 'function' && typeof api.set === 'function') || null;
+    }
+
+    async function sharedGet(api) {
+      const result = await api.get(STORAGE_KEY, true);
+      return result && Object.prototype.hasOwnProperty.call(result, 'value') ? result.value : result;
+    }
+
+    async function sharedSet(api, value) {
+      const result = await api.set(STORAGE_KEY, value, true);
+      if (result === false) throw new Error('Écriture partagée refusée');
+      return result;
+    }
+
+    function testLocalStorage() {
+      try {
+        const key = `${STORAGE_KEY}-probe`;
+        localStorage.setItem(key, '1');
+        localStorage.removeItem(key);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    async function loadState() {
+      setStatus('Chargement des registres...', 'loading', true);
+      sharedApi = detectSharedApi();
+      if (sharedApi) {
+        try {
+          const raw = await sharedGet(sharedApi);
+          state = raw ? normalizeState(raw) : deepCloneInitialState();
+          storageMode = 'shared';
+          $('#storageNote').textContent = 'Données partagées actives';
+          setStatus('Données partagées chargées. Les registres sont visibles par tous les utilisateurs.', 'success', true);
+          return;
+        } catch (error) {
+          console.warn('Stockage partagé indisponible, repli local.', error);
+        }
+      }
+      if (testLocalStorage()) {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          state = raw ? normalizeState(raw) : deepCloneInitialState();
+          storageMode = 'local';
+          $('#storageNote').textContent = 'Sauvegarde locale active';
+          setStatus('API partagée indisponible. Les données sont sauvegardées dans ce navigateur.', 'warning', true);
+          return;
+        } catch (error) {
+          console.warn('Les données locales sont illisibles. Le registre local est réinitialisé.', error);
+          state = deepCloneInitialState();
+          storageMode = 'local';
+          try { localStorage.removeItem(STORAGE_KEY); } catch (_) { /* Le prochain enregistrement retentera l'écriture. */ }
+          $('#storageNote').textContent = 'Sauvegarde locale réinitialisée';
+          setStatus('Les anciennes données locales étaient illisibles. Un registre local vide a été réinitialisé.', 'warning', true);
+          return;
+        }
+      }
+      state = deepCloneInitialState();
+      storageMode = 'memory';
+      $('#storageNote').textContent = 'Aucune sauvegarde persistante';
+      setStatus('Attention : aucun stockage persistant ne fonctionne. La saisie reste possible, mais sera perdue à la fermeture.', 'warning', true);
+    }
+
+    async function persistState() {
+      const payload = JSON.stringify(state);
+      if (storageMode === 'shared' && sharedApi) {
+        try {
+          await sharedSet(sharedApi, payload);
+          return true;
+        } catch (error) {
+          console.warn('Échec de sauvegarde partagée.', error);
+          if (testLocalStorage()) {
+            try {
+              localStorage.setItem(STORAGE_KEY, payload);
+              if (localStorage.getItem(STORAGE_KEY) !== payload) throw new Error('Confirmation de sauvegarde locale impossible');
+              storageMode = 'local';
+              $('#storageNote').textContent = 'Sauvegarde locale active';
+              setStatus('Échec du stockage partagé. La sauvegarde a été confirmée localement.', 'warning', true);
+              return true;
+            } catch (localError) {
+              console.warn('Le repli de sauvegarde locale a échoué.', localError);
+            }
+          }
+        }
+      }
+      if (storageMode === 'local') {
+        try {
+          localStorage.setItem(STORAGE_KEY, payload);
+          if (localStorage.getItem(STORAGE_KEY) !== payload) throw new Error('Confirmation de sauvegarde locale impossible');
+          return true;
+        } catch (error) {
+          console.warn('Échec de sauvegarde locale.', error);
+        }
+      }
+      storageMode = 'memory';
+      $('#storageNote').textContent = 'Aucune sauvegarde persistante';
+      setStatus('Échec de sauvegarde : les modifications ne sont conservées que temporairement en mémoire.', 'error', true);
+      await Promise.resolve();
+      return false;
+    }
+
+    async function commitMutation(button, mutate, successMessage) {
+      const backup = deepCopy(state);
+      const modeBeforeSave = storageMode;
+      if (button) button.disabled = true;
+      try {
+        setStatus('Sauvegarde en cours...', 'loading', true);
+        mutate();
+        const persisted = await persistState();
+        renderAll();
+        if (persisted && modeBeforeSave === 'shared' && storageMode === 'local') setStatus(`${successMessage} Le stockage partagé étant indisponible, la copie locale a été utilisée.`, 'warning', true);
+        else if (persisted) setStatus(successMessage, 'success');
+        return true;
+      } catch (error) {
+        state = backup;
+        renderAll();
+        setStatus(`Opération impossible : ${error.message || 'erreur inconnue'}`, 'error', true);
+        return false;
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    function nextId(collection, prefix) {
+      const collectionMax = collection.reduce((highest, item) => Math.max(highest, Number(String(item.id || '').split('-')[1]) || 0), 0);
+      const sequenceMax = Number(state.sequences?.[prefix]) || 0;
+      const nextNumber = Math.max(collectionMax, sequenceMax) + 1;
+      state.sequences = state.sequences || {};
+      state.sequences[prefix] = nextNumber;
+      return `${prefix}-${String(nextNumber).padStart(3, '0')}`;
+    }
+
+    function ageFromDate(value) {
+      if (!value) return '-';
+      const birth = new Date(`${value}T12:00:00`);
+      const now = new Date();
+      let age = now.getFullYear() - birth.getFullYear();
+      if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
+      return age >= 0 ? `${age} ans` : '-';
+    }
+
+    function situationBadge(value) {
+      const normalized = String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const special = normalized.includes('handicap') || normalized.includes('specifique');
+      return `<span class="badge ${special ? 'violet' : 'amber'}">${esc(value)}</span>`;
+    }
+
+    function emptyMarkup(title, detail) {
+      return `${icon('file')}<strong>${esc(title)}</strong><span>${esc(detail)}</span>`;
+    }
+
+    function renderHeaderActions() {
+      const actions = $('#headerActions');
+      if (currentTab === 'families') {
+        actions.innerHTML = `<button class="btn btn-primary" data-open-panel="familyFormPanel">${icon('plus')}Nouvelle famille</button>`;
+      } else if (currentTab === 'assistance') {
+        actions.innerHTML = `<button class="btn btn-primary" data-open-panel="aidFormPanel">${icon('plus')}Nouvelle aide</button>`;
+      } else if (currentTab === 'donations') {
+        actions.innerHTML = `<button class="btn btn-primary" data-open-panel="donationFormPanel">${icon('plus')}Nouveau don</button>`;
+      } else if (currentTab === 'members') {
+        actions.innerHTML = `<button class="btn btn-dark" id="printMembersList">${icon('print')}Liste officielle</button><button class="btn btn-dark" id="openBadgeDialog">${icon('card')}Créer un badge</button><button class="btn btn-primary" data-open-panel="memberFormPanel">${icon('plus')}Nouvel adhérent</button>`;
+      } else if (currentTab === 'equipment') {
+         actions.innerHTML = `<button class="btn btn-primary" data-open-panel="loanFormPanel">${icon('plus')}Nouveau prêt</button>`;
+       } else if (currentTab === 'events') {
+         actions.innerHTML = `<button class="btn btn-primary" data-open-panel="eventFormPanel">${icon('plus')}Nouveau dossier</button>`;
+       } else {
+         actions.innerHTML = '';
+       }
+     }
+
+    function switchTab(tab) {
+      if (!tabMeta[tab]) return;
+      currentTab = tab;
+      $$('.tab-view').forEach(view => view.classList.toggle('hidden', view.id !== `view-${tab}`));
+      $$('.nav-button[data-tab]').forEach(button => {
+        const isActive = button.dataset.tab === tab;
+        button.classList.toggle('active', isActive);
+        if (isActive) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
+      $('#pageTitle').textContent = tabMeta[tab].title;
+       $('#pageDescription').textContent = tabMeta[tab].description;
+       renderHeaderActions();
+       if (tab === 'bilan') renderBilan();
+       window.scrollTo({ top: 0, behavior: 'smooth' });
+     }
+
+    function memberRowTemplate() {
+      return `<tr>
+        <td><input class="member-firstname" required placeholder="Prénom"></td>
+        <td><select class="member-role"><option>Chef de foyer</option><option>Conjoint(e)</option><option>Enfant</option><option>Autre</option></select></td>
+        <td><input type="date" class="member-birthdate" max="${today()}"></td>
+        <td><select class="member-school"><option value="Non concerné">Non concerné</option><option value="Scolarisé(e)">Scolarisé(e)</option><option value="Non scolarisé(e)">Non scolarisé(e)</option><option value="Étudiant(e)">Étudiant(e)</option></select></td>
+        <td><button class="btn btn-danger icon-button remove-member-row" type="button" aria-label="Retirer ce membre">${icon('trash', 'icon-sm')}</button></td>
+      </tr>`;
+    }
+
+    function expenseRowTemplate() {
+      return `<tr><td><input class="expense-description" required placeholder="Nature de la dépense"></td><td><input type="number" min="0.01" step="0.01" inputmode="decimal" class="expense-amount" required placeholder="0,00"></td><td><button class="btn btn-danger icon-button remove-expense-row" type="button" aria-label="Retirer cette dépense">${icon('trash', 'icon-sm')}</button></td></tr>`;
+    }
+
+    function addFamilyMemberRow() { $('#familyMembersRows').insertAdjacentHTML('beforeend', memberRowTemplate()); }
+    function addExpenseRow() { $('#expenseRows').insertAdjacentHTML('beforeend', expenseRowTemplate()); updateEventCalculation(); }
+
+    function collectFamilyMembers() {
+      return $$('#familyMembersRows tr').map(row => ({
+        firstName: row.querySelector('.member-firstname').value.trim(),
+        role: row.querySelector('.member-role').value,
+        birthDate: row.querySelector('.member-birthdate').value,
+        school: row.querySelector('.member-school').value
+      })).filter(member => member.firstName);
+    }
+
+    function collectExpenses() {
+      return $$('#expenseRows tr').map(row => ({
+        description: row.querySelector('.expense-description').value.trim(),
+        amount: Number(row.querySelector('.expense-amount').value) || 0
+      })).filter(expense => expense.description);
+    }
+
+    function updateEventCalculation() {
+      const expenses = $$('.expense-amount').map(input => Number(input.value) || 0);
+      const expenseTotal = total(expenses);
+      const balance = (Number($('#eventBudget').value) || 0) - expenseTotal;
+      $('#expenseTotalLive').textContent = formatMoney(expenseTotal);
+      $('#eventBalanceLive').textContent = formatMoney(balance);
+      $('#eventBalanceLive').className = balance >= 0 ? 'positive' : 'negative';
+    }
+
+    function renderFamilies() {
+      $('#statFamilies').textContent = state.families.length;
+      const schoolChildren = state.families.flatMap(family => family.members || []).filter(member => member.role === 'Enfant' && ['Scolarise(e)', 'Scolarisé(e)'].includes(member.school)).length;
+      $('#statSchoolChildren').textContent = schoolChildren;
+      $('#statPeopleHelped').textContent = state.families.reduce((sum, family) => sum + Math.max((family.members || []).length, 1), 0);
+
+      const monthSelect = $('#familyMonthFilter');
+      if (monthSelect.options.length === 1) {
+        ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'].forEach((month, index) => monthSelect.add(new Option(month, String(index + 1).padStart(2, '0'))));
+      }
+      const selectedYear = $('#familyYearFilter').value;
+      const years = [...new Set(state.families.map(item => dateSlice(item.date, 0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
+      $('#familyYearFilter').innerHTML = `<option value="">Toutes les années</option>${years.map(year => `<option value="${year}">${year}</option>`).join('')}`;
+      if (years.includes(selectedYear)) $('#familyYearFilter').value = selectedYear;
+      const month = monthSelect.value;
+      const year = $('#familyYearFilter').value;
+      const filtered = state.families.filter(family => (!month || dateSlice(family.date, 5, 7) === month) && (!year || dateSlice(family.date, 0, 4) === year));
+      $('#familiesTableBody').innerHTML = filtered.map(family => {
+        const children = (family.members || []).filter(member => member.role === 'Enfant').length;
+        return `<tr>
+          <td class="code">${esc(family.id)}</td><td class="nowrap">${formatDate(family.date)}</td><td><strong>${esc(family.name)}</strong></td>
+          <td>${situationBadge(family.situation)}</td><td><strong>${esc(family.phone || '-')}</strong><br><span class="muted">${esc(family.address)}</span></td>
+          <td>${(family.members || []).length} pers.<br><span class="muted">${children} enfant(s)</span></td>
+          <td><div class="actions-cell"><button class="btn btn-dark btn-small" data-action="print-family" data-id="${esc(family.id)}">${icon('print', 'icon-sm')}Fiche</button><button class="btn btn-danger icon-button" data-action="delete-family" data-id="${esc(family.id)}" aria-label="Supprimer">${icon('trash', 'icon-sm')}</button></div></td>
+        </tr>`;
+      }).join('');
+      const noRows = filtered.length === 0;
+      $('#familiesEmpty').classList.toggle('hidden', !noRows);
+      $('#familiesEmpty').innerHTML = emptyMarkup('Aucune famille trouvée', state.families.length ? 'Modifiez les filtres pour afficher les dossiers.' : 'Commencez par inscrire une famille bénéficiaire.');
+
+      const selectedFamily = $('#donationFamilyDestination').value;
+      $('#donationFamilyDestination').innerHTML = `<option value="">Sélectionner une famille</option>${state.families.map(family => `<option value="${esc(family.id)}">${esc(family.id)} - Famille ${esc(family.name)}</option>`).join('')}`;
+      if (state.families.some(family => family.id === selectedFamily)) $('#donationFamilyDestination').value = selectedFamily;
+      $('#aidFamilySuggestions').innerHTML = state.families.map(family => `<option value="Famille ${esc(family.name)}">${esc(family.id)}</option>`).join('');
+    }
+
+    function renderFamilyAids() {
+      const financialTotal = total(state.familyAids.filter(aid => aid.type === 'financial').map(aid => aid.amount));
+      const otherCount = state.familyAids.filter(aid => aid.type === 'other').length;
+      $('#statFamilyAids').textContent = state.familyAids.length;
+      $('#statFinancialAids').textContent = formatMoney(financialTotal);
+      $('#statOtherAids').textContent = otherCount;
+      $('#aidsTableBody').innerHTML = state.familyAids.map(aid => {
+        const isFinancial = aid.type === 'financial';
+        const details = isFinancial ? formatMoney(aid.amount) : aid.description;
+        return `<tr><td class="code">${esc(aid.id)}</td><td>${formatDate(aid.date)}</td><td><strong>${esc(aid.familyName)}</strong></td><td><span class="badge ${isFinancial ? 'emerald' : 'sky'}">${isFinancial ? 'Financière' : 'Autre'}</span></td><td>${esc(details)}</td><td><div class="actions-cell"><button class="btn btn-dark btn-small" data-action="print-aid" data-id="${esc(aid.id)}">${icon('print', 'icon-sm')}Bon de don</button><button class="btn btn-danger icon-button" data-action="delete-aid" data-id="${esc(aid.id)}" aria-label="Supprimer">${icon('trash', 'icon-sm')}</button></div></td></tr>`;
+      }).join('');
+      $('#aidsEmpty').classList.toggle('hidden', state.familyAids.length > 0);
+      $('#aidsEmpty').innerHTML = emptyMarkup('Aucune aide familiale', 'Enregistrez une aide accordée à une famille pour commencer.');
+    }
+
+    function donationDestinationLabel(donation) {
+      let destinationType = donation.destinationType;
+      if (!destinationType) {
+        if (!donation.destination) destinationType = 'stock';
+        else if (String(donation.destination).startsWith('FAM-')) destinationType = 'family';
+        else if (String(donation.destination).startsWith('EVT-')) destinationType = 'event';
+        else destinationType = 'other';
+      }
+      if (destinationType === 'family') {
+        const family = state.families.find(item => item.id === donation.destination);
+        return family ? `Aide à une famille : ${family.id} - Famille ${family.name}` : `Aide à une famille : ${donation.destination || 'famille non précisée'}`;
+      }
+      if (destinationType === 'event') {
+        const event = state.events.find(item => item.id === donation.destination);
+        return event ? `Participation à un événement : ${event.id} - ${event.name}` : `Participation à un événement : ${donation.destination || 'événement non précisé'}`;
+      }
+      if (destinationType === 'other') return `Autre : ${donation.destination || 'non précisé'}`;
+      return 'Stock général';
+    }
+
+    function renderDonations() {
+      const financial = total(state.donations.filter(donation => donation.type === 'financial').map(donation => donation.amount));
+      const nature = total(state.donations.filter(donation => donation.type === 'nature').map(donation => donation.quantity));
+      $('#statFinancialDonations').textContent = formatMoney(financial);
+      $('#statNatureDonations').textContent = new Intl.NumberFormat('fr-DZ').format(nature);
+      $('#donationsTableBody').innerHTML = state.donations.map(donation => {
+        const destination = donationDestinationLabel(donation);
+        const details = donation.type === 'financial' ? formatMoney(donation.amount) : `${donation.quantity} x ${donation.description}`;
+        return `<tr><td class="code">${esc(donation.id)}</td><td>${formatDate(donation.date)}</td><td><strong>${esc(donation.donor)}</strong></td><td><span class="badge ${donation.type === 'financial' ? 'emerald' : 'sky'}">${donation.type === 'financial' ? 'Financier' : 'En nature'}</span></td><td>${esc(details)}</td><td>${esc(destination)}</td><td><div class="actions-cell"><button class="btn btn-dark btn-small" data-action="print-donation" data-id="${esc(donation.id)}">${icon('print', 'icon-sm')}Reçu</button><button class="btn btn-danger icon-button" data-action="delete-donation" data-id="${esc(donation.id)}" aria-label="Supprimer">${icon('trash', 'icon-sm')}</button></div></td></tr>`;
+      }).join('');
+      $('#donationsEmpty').classList.toggle('hidden', state.donations.length > 0);
+      $('#donationsEmpty').innerHTML = emptyMarkup('Aucun don enregistré', 'Le journal des contributions apparaîtra ici.');
+    }
+
+    function renderMembers() {
+      $('#statMembers').textContent = state.members.length;
+      $('#membersTableBody').innerHTML = state.members.map(member => `<tr>
+        <td class="code">${esc(member.id)}</td><td><strong>${esc(String(member.lastName || '').toUpperCase())} ${esc(member.firstName)}</strong></td><td>${ageFromDate(member.birthDate)}</td><td>${esc(member.mobile)}</td><td>${esc(member.profession || '-')}</td><td>${esc(member.address)}</td>
+        <td><div class="actions-cell"><button class="btn btn-primary btn-small" data-action="badge-member" data-id="${esc(member.id)}">${icon('card', 'icon-sm')}Badge</button><button class="btn btn-dark btn-small" data-action="print-member" data-id="${esc(member.id)}">${icon('print', 'icon-sm')}Fiche</button><button class="btn btn-danger icon-button" data-action="delete-member" data-id="${esc(member.id)}" aria-label="Supprimer">${icon('trash', 'icon-sm')}</button></div></td>
+      </tr>`).join('');
+      $('#membersEmpty').classList.toggle('hidden', state.members.length > 0);
+      $('#membersEmpty').innerHTML = emptyMarkup('Aucun adhérent inscrit', 'Les adhérents et bénévoles apparaîtront dans ce registre.');
+      $('#badgeMemberSelect').innerHTML = state.members.length ? state.members.map(member => `<option value="${esc(member.id)}">${esc(member.id)} - ${esc(member.lastName)} ${esc(member.firstName)}</option>`).join('') : '<option value="">Aucun adhérent disponible</option>';
+    }
+
+    function loanStatus(loan) {
+      if (loan.returnedAt) return { label: `Retourné le ${formatDate(loan.returnedAt)}`, className: 'teal' };
+      if (loan.dueDate < today()) return { label: 'En retard', className: 'red' };
+      return { label: 'En cours', className: 'sky' };
+    }
+
+    function renderLoans() {
+      const activeLoans = state.loans.filter(loan => !loan.returnedAt);
+      const lateLoans = activeLoans.filter(loan => loan.dueDate < today());
+      $('#statLoans').textContent = state.loans.length;
+      $('#statActiveLoans').textContent = activeLoans.length;
+      $('#statLateLoans').textContent = lateLoans.length;
+      $('#loansTableBody').innerHTML = state.loans.map(loan => {
+        const status = loanStatus(loan);
+        return `<tr><td class="code">${esc(loan.id)}</td><td><strong>${esc(loan.material)}</strong></td><td>${esc(loan.borrower)}</td><td>${formatDate(loan.loanDate)}</td><td>${formatDate(loan.dueDate)}</td><td><span class="badge ${status.className}">${esc(status.label)}</span></td><td><div class="actions-cell"><button class="btn btn-dark btn-small" data-action="print-loan" data-id="${esc(loan.id)}">${icon('print', 'icon-sm')}Bon de prêt</button>${loan.returnedAt ? '' : `<button class="btn btn-primary btn-small" data-action="return-loan" data-id="${esc(loan.id)}">${icon('box', 'icon-sm')}Retour</button>`}<button class="btn btn-danger icon-button" data-action="delete-loan" data-id="${esc(loan.id)}" aria-label="Supprimer">${icon('trash', 'icon-sm')}</button></div></td></tr>`;
+      }).join('');
+      $('#loansEmpty').classList.toggle('hidden', state.loans.length > 0);
+      $('#loansEmpty').innerHTML = emptyMarkup('Aucun prêt de matériel', 'Enregistrez la sortie d’un matériel sanitaire pour commencer.');
+    }
+
+    function renderEvents() {
+      const expenses = total(state.events.flatMap(event => (event.expenses || []).map(expense => expense.amount)));
+      const budgets = total(state.events.map(event => event.budget));
+      $('#statEvents').textContent = state.events.length;
+      $('#statExpenses').textContent = formatMoney(expenses);
+      $('#statBudgets').textContent = formatMoney(budgets);
+      $('#eventsTableBody').innerHTML = state.events.map(event => {
+        const spent = total((event.expenses || []).map(expense => expense.amount));
+        const balance = Number(event.budget) - spent;
+        const photoCount = Array.isArray(event.photos) ? event.photos.length : 0;
+        return `<tr><td class="code">${esc(event.id)}</td><td><strong>${esc(event.name)}</strong><br><span class="muted">${formatDate(event.date)}</span></td><td>${esc(event.responsible)}</td><td>${formatMoney(event.budget)}</td><td>${formatMoney(spent)}</td><td class="${balance >= 0 ? 'positive' : 'negative'}">${formatMoney(balance)}</td><td><div class="actions-cell"><button class="btn btn-secondary btn-small" data-action="event-photos" data-id="${esc(event.id)}">${icon('image', 'icon-sm')}Photos (${photoCount})</button><button class="btn btn-dark btn-small" data-action="print-event" data-id="${esc(event.id)}">${icon('file', 'icon-sm')}Décharge / Bilan</button><button class="btn btn-danger icon-button" data-action="delete-event" data-id="${esc(event.id)}" aria-label="Supprimer">${icon('trash', 'icon-sm')}</button></div></td></tr>`;
+      }).join('');
+      $('#eventsEmpty').classList.toggle('hidden', state.events.length > 0);
+      $('#eventsEmpty').innerHTML = emptyMarkup('Aucun dossier événement', 'Créez un dossier pour suivre un budget et ses frais.');
+      const selectedEvent = $('#donationEventDestination').value;
+      $('#donationEventDestination').innerHTML = `<option value="">Sélectionner un événement</option>${state.events.map(event => `<option value="${esc(event.id)}">${esc(event.id)} - ${esc(event.name)}</option>`).join('')}`;
+      if (state.events.some(event => event.id === selectedEvent)) $('#donationEventDestination').value = selectedEvent;
+    }
+
+    function setPhotoDialogMessage(message, type = '') {
+      const element = $('#eventPhotosMessage');
+      element.textContent = message;
+      element.className = `photo-dialog-message ${type}`.trim();
+    }
+
+    function renderEventPhotosDialog() {
+      const event = state.events.find(item => item.id === activePhotoEventId);
+      if (!event) return;
+      const photos = Array.isArray(event.photos) ? event.photos : [];
+      $('#eventPhotosTitle').textContent = `Photos - ${event.id} - ${event.name}`;
+      $('#eventPhotosGrid').innerHTML = photos.length ? photos.map(photo => {
+        const fileName = String(photo.name || 'photo-evenement.jpg').replace(/[^a-zA-Z0-9._-]+/g, '-');
+        return `<figure class="photo-item"><img src="${esc(photo.data)}" alt="${esc(photo.name || `Photo de ${event.name}`)}" loading="lazy"><figcaption class="photo-item-footer"><span class="photo-item-name" title="${esc(photo.name || 'Photo')}">${esc(photo.name || 'Photo')}</span><div class="actions-cell"><a class="btn btn-secondary icon-button" href="${esc(photo.data)}" download="${esc(fileName)}" aria-label="Télécharger la photo">${icon('file', 'icon-sm')}</a><button class="btn btn-danger icon-button" type="button" data-delete-event-photo="${esc(photo.id)}" aria-label="Supprimer la photo">${icon('trash', 'icon-sm')}</button></div></figcaption></figure>`;
+      }).join('') : '<div class="photo-empty">Aucune photo enregistrée pour cet événement.</div>';
+    }
+
+    function openEventPhotosDialog(eventId) {
+      const event = state.events.find(item => item.id === eventId);
+      if (!event) return;
+      activePhotoEventId = eventId;
+      $('#eventPhotoFiles').value = '';
+      setPhotoDialogMessage('Les photos seront enregistrées avec le dossier de cet événement.');
+      renderEventPhotosDialog();
+      const dialog = $('#eventPhotosDialog');
+      dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', '');
+    }
+
+    function closeEventPhotosDialog() {
+      const dialog = $('#eventPhotosDialog');
+      if (dialog.open && dialog.close) dialog.close();
+      else dialog.removeAttribute('open');
+      activePhotoEventId = '';
+    }
+
+    function loadImage(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+        image.onerror = () => { URL.revokeObjectURL(url); reject(new Error(`Impossible de lire « ${file.name} ».`)); };
+        image.src = url;
+      });
+    }
+
+    async function compressEventPhoto(file) {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error(`Le format de « ${file.name} » n'est pas accepté.`);
+      if (file.size > 12 * 1024 * 1024) throw new Error(`La photo « ${file.name} » dépasse la limite de 12 Mo.`);
+      const image = await loadImage(file);
+      const drawCompressed = (maxSide, quality) => {
+        const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('La compression des images n’est pas prise en charge par ce navigateur.');
+        context.fillStyle = '#FFFFFF';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', quality);
+      };
+      let data = drawCompressed(1280, 0.74);
+      if (data.length > 900000) data = drawCompressed(900, 0.66);
+      return { id: `PHO-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name: file.name, data, addedAt: today() };
+    }
+
+     function renderAll() {
+       renderFamilies();
+       renderFamilyAids();
+       renderDonations();
+       renderMembers();
+       renderLoans();
+       renderEvents();
+       if (currentTab === 'bilan') renderBilan();
+     }
+
+     function renderBilan() {
+       const dons = total(state.donations.filter(d => d.type === 'financial').map(d => d.amount));
+       const aides = total(state.familyAids.filter(a => a.type === 'financial').map(a => a.amount));
+       const budgetEvents = total(state.events.map(e => Number(e.budget) || 0));
+       const fraisEvents = total(state.events.flatMap(e => (e.expenses || []).map(x => Number(x.amount) || 0)));
+       const budgetRestant = budgetEvents - fraisEvents;
+       const prets = state.loans.filter(l => !l.returnedAt).length;
+       $('#bilanDons').textContent = formatMoney(dons);
+       $('#bilanAides').textContent = formatMoney(aides);
+       $('#bilanBudget').textContent = formatMoney(budgetRestant);
+       $('#bilanPrets').textContent = prets;
+       const solde = dons - aides + budgetRestant;
+       const soldeEl = $('#bilanSolde');
+       soldeEl.textContent = formatMoney(solde);
+       soldeEl.style.color = solde >= 0 ? 'var(--emerald)' : 'var(--red)';
+     }
+
+    function officialHeader(code = '') {
+      return `<header class="document-head" style="grid-template-columns:1fr auto;text-align:left"><div><div class="document-org">Association Mostaganem Bénévole</div><div class="document-meta">Registre administratif officiel - Wilaya de Mostaganem</div></div><div class="document-code">${esc(code)}</div></header>`;
+    }
+
+    function donationReceiptHeader(code) {
+      return `<header class="document-head" style="grid-template-columns:1fr auto;text-align:left"><div><div class="document-org">Association Mostaganem Bénévole</div><div class="document-meta">Reçu officiel de don - Wilaya de Mostaganem</div></div><div class="document-code">${esc(code)}</div></header>`;
+    }
+
+    function equipmentLoanHeader(code) {
+      return `<header class="document-head" style="grid-template-columns:1fr auto;text-align:left"><div><div class="document-org">Association Mostaganem Bénévole</div><div class="document-meta">Bon officiel de prêt de matériel - Wilaya de Mostaganem</div></div><div class="document-code">${esc(code)}</div></header>`;
+    }
+
+    function familyAidHeader(code) {
+      return `<header class="document-head" style="grid-template-columns:1fr auto;text-align:left"><div><div class="document-org">Association Mostaganem Bénévole</div><div class="document-meta">Bon d'aide familiale - Wilaya de Mostaganem</div></div><div class="document-code">${esc(code)}</div></header>`;
+    }
+
+    function officialSeal() {
+      return `<div class="official-seal"><span>Cachet de l'association</span></div>`;
+    }
+
+    function documentFooter() {
+      return `<footer class="document-footer">Association Mostaganem Bénévole - Document généré le ${formatDate(today())} - Registre administratif</footer>`;
+    }
+
+    function openPrintDocument(title, content) {
+      $('#printPreviewTitle').textContent = title;
+      $('#printDocument').innerHTML = content;
+      $('#printArea').classList.add('visible');
+      document.body.style.overflow = 'hidden';
+      $('#printArea').scrollTop = 0;
+    }
+
+    function closePrintDocument() {
+      $('#printArea').classList.remove('visible');
+      document.body.style.overflow = '';
+    }
+
+    function printFamily(id) {
+      const family = state.families.find(item => item.id === id);
+      if (!family) return;
+      const docs = family.documents || {};
+      openPrintDocument(`Fiche ${family.id}`, `${officialHeader(family.id)}
+        <h1 class="document-title">Fiche de famille bénéficiaire</h1><p class="document-subtitle">Inscription du ${formatDate(family.date)}</p>
+        <section class="doc-section"><h3>Informations générales</h3><div class="doc-grid">
+          <div class="doc-field"><span>Nom de famille</span><strong>${esc(family.name)}</strong></div><div class="doc-field"><span>Situation</span><strong>${esc(family.situation)}</strong></div>
+          <div class="doc-field"><span>Téléphone</span><strong>${esc(family.phone || '-')}</strong></div><div class="doc-field"><span>Adresse</span><strong>${esc(family.address)}</strong></div>
+        </div></section>
+        <section class="doc-section"><h3>Composition du foyer</h3><table class="doc-table"><thead><tr><th>Prénom</th><th>Rôle</th><th>Naissance</th><th>Situation scolaire</th></tr></thead><tbody>${(family.members || []).map(member => `<tr><td>${esc(member.firstName)}</td><td>${esc(member.role)}</td><td>${formatDate(member.birthDate)}</td><td>${esc(member.school)}</td></tr>`).join('') || '<tr><td colspan="4">Aucun membre détaillé</td></tr>'}</tbody></table></section>
+        <section class="doc-section"><h3>Pièces signalées dans le dossier</h3><div class="doc-grid"><div class="doc-field"><span>Justificatif de domicile</span><strong>${docs.home ? `Présent - ${esc(docs.home)}` : 'Non fourni'}</strong></div><div class="doc-field"><span>Fiche familiale</span><strong>${docs.family ? `Présente - ${esc(docs.family)}` : 'Non fournie'}</strong></div><div class="doc-field"><span>CNAS</span><strong>${docs.cnas ? `Présente - ${esc(docs.cnas)}` : 'Non fournie'}</strong></div><div class="doc-field"><span>CASNOS</span><strong>${docs.casnos ? `Présente - ${esc(docs.casnos)}` : 'Non fournie'}</strong></div></div></section>
+        <div class="signature-grid"><div class="signature-space"><strong>Signature du bénéficiaire</strong></div><div class="signature-space"><strong>Association</strong>${officialSeal()}</div></div>${documentFooter()}`);
+    }
+
+    function printDonation(id) {
+      const donation = state.donations.find(item => item.id === id);
+      if (!donation) return;
+      const destination = donationDestinationLabel(donation);
+      const isFinancial = donation.type === 'financial';
+      const donationLabel = isFinancial ? 'Don financier' : 'Don en nature';
+      const donationValue = isFinancial ? formatMoney(donation.amount) : `${donation.quantity} article(s) - ${donation.description}`;
+      openPrintDocument(`Reçu ${donation.id}`, `${donationReceiptHeader(donation.id)}
+        <h1 class="document-title">Reçu de don</h1><p class="document-subtitle">Bon remis au donateur</p>
+        <section class="doc-section"><div class="engagement">L'association <strong>Mostaganem Bénévole</strong> certifie avoir reçu de <strong>${esc(donation.donor)}</strong>, en date du <strong>${formatDate(donation.date)}</strong>, la contribution détaillée ci-dessous.</div></section>
+        <section class="doc-section"><h3>Détail du don</h3><div class="doc-grid">
+          <div class="doc-field"><span>Numéro de reçu</span><strong>${esc(donation.id)}</strong></div>
+          <div class="doc-field"><span>Type de contribution</span><strong>${donationLabel}</strong></div>
+          <div class="doc-field"><span>${isFinancial ? 'Montant reçu' : 'Articles reçus'}</span><strong>${esc(donationValue)}</strong></div>
+          <div class="doc-field"><span>Destination</span><strong>${esc(destination)}</strong></div>
+        </div></section>
+        <section class="doc-section"><p>Ce reçu atteste l'enregistrement du don dans le registre officiel de l'association. Mostaganem Bénévole remercie sincèrement le donateur pour son engagement solidaire.</p></section>
+        <div class="signature-grid"><div class="signature-space"><strong>Signature du donateur<br>${esc(donation.donor)}</strong></div><div class="signature-space"><strong>Cachet et signature de l'association</strong></div></div>${documentFooter()}`);
+    }
+
+    function printFamilyAid(id) {
+      const aid = state.familyAids.find(item => item.id === id);
+      if (!aid) return;
+      const isFinancial = aid.type === 'financial';
+      const aidLabel = isFinancial ? 'Aide financière' : 'Autre aide';
+      const aidValue = isFinancial ? formatMoney(aid.amount) : aid.description;
+      openPrintDocument(`Bon de don ${aid.id}`, `${familyAidHeader(aid.id)}<h1 class="document-title">Bon de don familial</h1><p class="document-subtitle">Attestation de remise d'une aide à une famille</p>
+        <section class="doc-section"><div class="engagement">L'association <strong>Mostaganem Bénévole</strong> certifie avoir remis à <strong>${esc(aid.familyName)}</strong>, en date du <strong>${formatDate(aid.date)}</strong>, l'aide détaillée ci-dessous.</div></section>
+        <section class="doc-section"><h3>Détail de l'aide</h3><div class="doc-grid">
+          <div class="doc-field"><span>Numéro du bon</span><strong>${esc(aid.id)}</strong></div><div class="doc-field"><span>Famille bénéficiaire</span><strong>${esc(aid.familyName)}</strong></div>
+          <div class="doc-field"><span>Type d'aide</span><strong>${aidLabel}</strong></div><div class="doc-field"><span>${isFinancial ? 'Montant remis' : 'Aide remise'}</span><strong>${esc(aidValue)}</strong></div>
+          <div class="doc-field"><span>Date de remise</span><strong>${formatDate(aid.date)}</strong></div>
+        </div></section>
+        <section class="doc-section"><div class="engagement">Le bénéficiaire reconnaît avoir reçu l'aide mentionnée ci-dessus et confirme l'exactitude des informations portées sur ce bon.</div></section>
+        <div class="signature-grid"><div class="signature-space"><strong>Signature du bénéficiaire<br>${esc(aid.familyName)}</strong></div><div class="signature-space"><strong>Cachet et signature de l'association</strong></div></div>${documentFooter()}`);
+    }
+
+    function printMember(id) {
+      const member = state.members.find(item => item.id === id);
+      if (!member) return;
+      openPrintDocument(`Fiche ${member.id}`, `${officialHeader(member.id)}<h1 class="document-title">Fiche individuelle d'adhérent</h1><p class="document-subtitle">Membre de l'association Mostaganem Bénévole</p>
+        <section class="doc-section"><h3>Identité et coordonnées</h3><div class="doc-grid"><div class="doc-field"><span>Nom</span><strong>${esc(String(member.lastName || '').toUpperCase())}</strong></div><div class="doc-field"><span>Prénom</span><strong>${esc(member.firstName)}</strong></div><div class="doc-field"><span>Date de naissance</span><strong>${formatDate(member.birthDate)} (${ageFromDate(member.birthDate)})</strong></div><div class="doc-field"><span>Mobile</span><strong>${esc(member.mobile)}</strong></div><div class="doc-field"><span>Profession</span><strong>${esc(member.profession || '-')}</strong></div><div class="doc-field"><span>Date d'adhésion</span><strong>${formatDate(member.joinedAt)}</strong></div><div class="doc-field" style="grid-column:1/-1"><span>Adresse</span><strong>${esc(member.address)}</strong></div></div></section>
+        <section class="doc-section"><div class="engagement">Je soussigné(e), <strong>${esc(member.firstName)} ${esc(member.lastName)}</strong>, confirme mon adhésion à l'association Mostaganem Bénévole et m'engage à respecter ses statuts, son règlement intérieur et ses principes de solidarité.</div></section>
+        <div class="signature-grid"><div class="signature-space"><strong>Signature de l'adhérent</strong></div><div class="signature-space"><strong>Visa de l'association</strong>${officialSeal()}</div></div>${documentFooter()}`);
+    }
+
+    function printBadge(id) {
+      const member = state.members.find(item => item.id === id);
+      if (!member) return;
+      openPrintDocument(`Badge ${member.id}`, `<div class="member-card"><div class="member-card-head"><div><div class="member-card-brand">Mostaganem Bénévole</div><div class="member-card-kicker">Carte officielle de membre</div></div></div><div class="member-card-id">${esc(member.id)}</div><div class="member-card-body"><div class="member-card-name">${esc(member.lastName)} ${esc(member.firstName)}</div><div class="member-card-details"><div><span>Profession</span>${esc(member.profession || 'Bénévole')}</div><div><span>Mobile</span>${esc(member.mobile)}</div><div><span>Adresse</span>${esc(member.address)}</div></div></div><div class="member-card-year">Adhésion ${String(member.joinedAt || today()).slice(0,4)}</div></div>`);
+    }
+
+    function printMembersList() {
+      openPrintDocument('Liste officielle des adhérents', `${officialHeader(`ADH-${new Date().getFullYear()}`)}<h1 class="document-title">Liste officielle des adhérents</h1><p class="document-subtitle">Situation au ${formatDate(today())} - ${state.members.length} membre(s)</p><table class="doc-table"><thead><tr><th>ID</th><th>Nom et prénom</th><th>Naissance</th><th>Mobile</th><th>Profession</th><th>Signature</th></tr></thead><tbody>${state.members.map(member => `<tr><td>${esc(member.id)}</td><td><strong>${esc(String(member.lastName || '').toUpperCase())} ${esc(member.firstName)}</strong></td><td>${formatDate(member.birthDate)}</td><td>${esc(member.mobile)}</td><td>${esc(member.profession || '-')}</td><td style="height:32px"></td></tr>`).join('') || '<tr><td colspan="6">Aucun adhérent inscrit.</td></tr>'}</tbody></table><div class="signature-grid" style="grid-template-columns:1fr 1fr"><div></div><div class="signature-space"><strong>Le / La président(e)</strong>${officialSeal()}</div></div>${documentFooter()}`);
+    }
+
+    function printLoan(id) {
+      const loan = state.loans.find(item => item.id === id);
+      if (!loan) return;
+      const status = loanStatus(loan);
+      openPrintDocument(`Bon de prêt ${loan.id}`, `${equipmentLoanHeader(loan.id)}<h1 class="document-title">Bon de prêt de matériel</h1><p class="document-subtitle">Matériel sanitaire mis à disposition par l'association</p>
+        <section class="doc-section"><h3>Informations du prêt</h3><div class="doc-grid">
+          <div class="doc-field"><span>Matériel prêté</span><strong>${esc(loan.material)}</strong></div><div class="doc-field"><span>Emprunteur</span><strong>${esc(loan.borrower)}</strong></div>
+          <div class="doc-field"><span>Date de sortie</span><strong>${formatDate(loan.loanDate)}</strong></div><div class="doc-field"><span>Retour prévu</span><strong>${formatDate(loan.dueDate)}</strong></div>
+          <div class="doc-field"><span>Statut</span><strong>${esc(status.label)}</strong></div>${loan.returnedAt ? `<div class="doc-field"><span>Date de retour réelle</span><strong>${formatDate(loan.returnedAt)}</strong></div>` : ''}
+        </div></section>
+        <section class="doc-section"><h3>Engagement de l'emprunteur</h3><div class="engagement">Je soussigné(e), <strong>${esc(loan.borrower)}</strong>, reconnais avoir reçu en prêt le matériel <strong>${esc(loan.material)}</strong>. Je m'engage à en prendre soin, à ne pas le céder à une autre personne et à le restituer à l'association Mostaganem Bénévole au plus tard le <strong>${formatDate(loan.dueDate)}</strong>, dans son état d'origine, hors usure normale.</div></section>
+        <div class="signature-grid"><div class="signature-space"><strong>Signature de l'emprunteur<br>${esc(loan.borrower)}</strong></div><div class="signature-space"><strong>Cachet et signature de l'association</strong></div></div>${documentFooter()}`);
+    }
+
+    function printEvent(id) {
+      const event = state.events.find(item => item.id === id);
+      if (!event) return;
+      const spent = total((event.expenses || []).map(expense => expense.amount));
+      const balance = Number(event.budget) - spent;
+      openPrintDocument(`Décharge ${event.id}`, `${officialHeader(event.id)}<h1 class="document-title">Décharge et bilan financier</h1><p class="document-subtitle">Dossier événement du ${formatDate(event.date)}</p>
+        <section class="doc-section"><h3>Objet de la décharge</h3><div class="doc-grid"><div class="doc-field"><span>Événement</span><strong>${esc(event.name)}</strong></div><div class="doc-field"><span>Responsable</span><strong>${esc(event.responsible)}</strong></div><div class="doc-field" style="grid-column:1/-1"><span>Description</span><strong>${esc(event.description)}</strong></div></div></section>
+        <section class="doc-section"><h3>Détail des frais engagés</h3><table class="doc-table"><thead><tr><th>N.</th><th>Description</th><th class="text-right">Montant</th></tr></thead><tbody>${(event.expenses || []).map((expense, index) => `<tr><td>${index + 1}</td><td>${esc(expense.description)}</td><td class="text-right">${formatMoney(expense.amount)}</td></tr>`).join('') || '<tr><td colspan="3">Aucun frais déclaré</td></tr>'}</tbody></table><div class="doc-total"><div class="doc-total-row"><span>Budget / Recette</span><strong>${formatMoney(event.budget)}</strong></div><div class="doc-total-row"><span>Total des frais</span><strong>${formatMoney(spent)}</strong></div><div class="doc-total-row final"><span>Solde</span><strong class="${balance >= 0 ? 'positive' : 'negative'}">${formatMoney(balance)}</strong></div></div></section>
+        <section class="doc-section"><h3>Engagement de responsabilité</h3><div class="engagement">Je soussigné(e), <strong>${esc(event.responsible)}</strong>, reconnais avoir reçu la somme allouée au dossier <strong>${esc(event.id)} - ${esc(event.name)}</strong>. Je certifie l'exactitude des frais présentés ci-dessus et m'engage à restituer tout solde positif, ou à justifier tout dépassement, auprès de l'association Mostaganem Bénévole.</div></section>
+        <div class="signature-grid"><div class="signature-space"><strong>Le / La responsable<br>${esc(event.responsible)}</strong></div><div class="signature-space"><strong>Pour l'association</strong>${officialSeal()}</div></div>${documentFooter()}`);
+    }
+
+    function printCurrentRegister() {
+      if (currentTab === 'members') return printMembersList();
+      const configs = {
+        families: { title: 'Registre des familles bénéficiaires', headers: ['Code','Date','Famille','Situation','Foyer'], rows: state.families.map(f => [f.id, formatDate(f.date), f.name, f.situation, `${(f.members || []).length} pers.`]) },
+        assistance: { title: 'Registre des aides aux familles', headers: ['Code','Date','Famille','Type','Valeur ou description'], rows: state.familyAids.map(aid => [aid.id, formatDate(aid.date), aid.familyName, aid.type === 'financial' ? 'Financière' : 'Autre', aid.type === 'financial' ? formatMoney(aid.amount) : aid.description]) },
+        donations: { title: 'Journal officiel des dons', headers: ['Reçu','Date','Donateur','Type','Valeur','Destination'], rows: state.donations.map(d => [d.id, formatDate(d.date), d.donor, d.type === 'financial' ? 'Financier' : 'Nature', d.type === 'financial' ? formatMoney(d.amount) : `${d.quantity} x ${d.description}`, donationDestinationLabel(d)]) },
+        equipment: { title: 'Registre des prêts de matériel', headers: ['Code','Matériel','Emprunteur','Sortie','Retour prévu','Statut'], rows: state.loans.map(loan => [loan.id, loan.material, loan.borrower, formatDate(loan.loanDate), formatDate(loan.dueDate), loanStatus(loan).label]) },
+        events: { title: 'Registre des événements et décharges', headers: ['ID','Date','Événement','Responsable','Budget','Frais'], rows: state.events.map(e => [e.id, formatDate(e.date), e.name, e.responsible, formatMoney(e.budget), formatMoney(total((e.expenses || []).map(x => x.amount)))]) }
+      };
+      const config = configs[currentTab];
+      openPrintDocument(config.title, `${officialHeader(`REG-${new Date().getFullYear()}`)}<h1 class="document-title">${esc(config.title)}</h1><p class="document-subtitle">Édition du ${formatDate(today())}</p><table class="doc-table"><thead><tr>${config.headers.map(header => `<th>${esc(header)}</th>`).join('')}</tr></thead><tbody>${config.rows.map(row => `<tr>${row.map(cell => `<td>${esc(cell)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${config.headers.length}">Aucune donnée enregistrée.</td></tr>`}</tbody></table>${documentFooter()}`);
+    }
+
+    function resetFamilyForm() {
+      $('#familyForm').reset();
+      $('#familyDate').value = today();
+      $('#familyDate').max = today();
+      $('#familyMembersRows').innerHTML = '';
+      addFamilyMemberRow();
+    }
+    function resetDonationForm() { $('#donationForm').reset(); $('#donationDate').value = today(); $('#donationDate').max = today(); toggleDonationType(); toggleDonationDestination(); }
+    function resetAidForm() { $('#aidForm').reset(); $('#aidDate').value = today(); $('#aidDate').max = today(); toggleAidType(); }
+    function resetMemberForm() { $('#memberForm').reset(); $('#memberBirthDate').max = today(); }
+    function resetLoanForm() { $('#loanForm').reset(); $('#loanDate').value = today(); $('#loanDate').max = today(); $('#loanDueDate').min = today(); }
+    function resetEventForm() { $('#eventForm').reset(); $('#eventDate').value = today(); $('#expenseRows').innerHTML = ''; addExpenseRow(); updateEventCalculation(); }
+
+    function toggleDonationType() {
+      const isFinancial = $('#donationType').value === 'financial';
+      $('#donationAmountField').classList.toggle('hidden', !isFinancial);
+      $('#donationDescriptionField').classList.toggle('hidden', isFinancial);
+      $('#donationQuantityField').classList.toggle('hidden', isFinancial);
+      $('#donationAmount').required = isFinancial;
+      $('#donationDescription').required = !isFinancial;
+      $('#donationQuantity').required = !isFinancial;
+    }
+
+    function toggleAidType() {
+      const isFinancial = $('#aidType').value === 'financial';
+      $('#aidAmountField').classList.toggle('hidden', !isFinancial);
+      $('#aidDescriptionField').classList.toggle('hidden', isFinancial);
+      $('#aidAmount').required = isFinancial;
+      $('#aidDescription').required = !isFinancial;
+    }
+
+    function toggleDonationDestination() {
+      const destinationType = $('#donationDestination').value;
+      const isFamily = destinationType === 'family';
+      const isEvent = destinationType === 'event';
+      const isOther = destinationType === 'other';
+      $('#donationFamilyDestinationField').classList.toggle('hidden', !isFamily);
+      $('#donationEventDestinationField').classList.toggle('hidden', !isEvent);
+      $('#donationOtherDestinationField').classList.toggle('hidden', !isOther);
+      $('#donationFamilyDestination').required = isFamily;
+      $('#donationEventDestination').required = isEvent;
+      $('#donationOtherDestination').required = isOther;
+    }
+
+    document.addEventListener('click', async event => {
+      const nav = event.target.closest('[data-tab]');
+      if (nav) switchTab(nav.dataset.tab);
+
+      const openPanel = event.target.closest('[data-open-panel]');
+      if (openPanel) {
+        $(`#${openPanel.dataset.openPanel}`).classList.remove('hidden');
+        $(`#${openPanel.dataset.openPanel}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      const closePanel = event.target.closest('[data-close-panel]');
+      if (closePanel) $(`#${closePanel.dataset.closePanel}`).classList.add('hidden');
+
+      const action = event.target.closest('[data-action]');
+      if (!action) return;
+      const { action: type, id } = action.dataset;
+      if (type === 'print-family') printFamily(id);
+      if (type === 'print-aid') printFamilyAid(id);
+      if (type === 'print-donation') printDonation(id);
+      if (type === 'print-member') printMember(id);
+      if (type === 'badge-member') printBadge(id);
+      if (type === 'print-loan') printLoan(id);
+      if (type === 'event-photos') openEventPhotosDialog(id);
+      if (type === 'print-event') printEvent(id);
+      if (type === 'return-loan') {
+        const loan = state.loans.find(item => item.id === id);
+        if (!loan || !confirm(`Confirmer le retour du matériel « ${loan.material} » aujourd'hui ?`)) return;
+        await commitMutation(action, () => { loan.returnedAt = today(); }, `Le retour du matériel ${id} a été enregistré.`);
+      }
+      if (type.startsWith('delete-')) {
+        const labels = { 'delete-family': ['families', 'la famille'], 'delete-aid': ['familyAids', "l'aide familiale"], 'delete-donation': ['donations', 'le don'], 'delete-member': ['members', "l'adhérent"], 'delete-loan': ['loans', 'le prêt de matériel'], 'delete-event': ['events', "le dossier d'événement"] };
+        const [collection, label] = labels[type];
+        const eventRecord = type === 'delete-event' ? state.events.find(item => item.id === id) : null;
+        const photoWarning = eventRecord?.photos?.length ? ` Les ${eventRecord.photos.length} photo(s) associée(s) seront également supprimée(s).` : '';
+        if (!confirm(`Confirmer la suppression de ${label} ${id} ?${photoWarning} Cette action est définitive.`)) return;
+        await commitMutation(action, () => { state[collection] = state[collection].filter(item => item.id !== id); }, `${id} a été supprimé après confirmation de la sauvegarde.`);
+      }
+    });
+
+    $('#familyForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = event.submitter;
+      const members = collectFamilyMembers();
+      if (!members.length) { setStatus('Ajoutez au moins un membre au foyer.', 'error', true); return; }
+      if (!$('#familyName').value.trim()) { validationError('Le nom de la famille est obligatoire.', '#familyName'); return; }
+      if (!$('#familyAddress').value.trim()) { validationError("L'adresse de la famille est obligatoire.", '#familyAddress'); return; }
+      if (!isIsoDate($('#familyDate').value) || $('#familyDate').value > today()) { validationError("La date d'inscription n'est pas valide.", '#familyDate'); return; }
+      if (members.some(member => member.birthDate && (!isIsoDate(member.birthDate) || member.birthDate > today()))) { validationError('Une date de naissance du foyer est invalide ou située dans le futur.', '.member-birthdate'); return; }
+      const family = {
+        id: nextId(state.families, 'FAM'), date: $('#familyDate').value, name: $('#familyName').value.trim(), situation: $('#familySituation').value,
+        phone: $('#familyPhone').value.trim(), address: $('#familyAddress').value.trim(), members,
+        documents: { home: $('#docHome').files[0]?.name || '', family: $('#docFamily').files[0]?.name || '', cnas: $('#docCnas').files[0]?.name || '', casnos: $('#docCasnos').files[0]?.name || '' }
+      };
+      const saved = await commitMutation(button, () => state.families.push(family), `${family.id} enregistrée avec succès.`);
+      if (saved) { resetFamilyForm(); $('#familyFormPanel').classList.add('hidden'); }
+    });
+
+    $('#aidForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const type = $('#aidType').value;
+      if (!$('#aidFamilyName').value.trim()) { validationError('Le nom de la famille bénéficiaire est obligatoire.', '#aidFamilyName'); return; }
+      if (!isIsoDate($('#aidDate').value) || $('#aidDate').value > today()) { validationError("La date de l'aide n'est pas valide.", '#aidDate'); return; }
+      if (type === 'financial' && !isPositiveNumber($('#aidAmount').value)) { validationError("Le montant de l'aide doit être supérieur à zéro.", '#aidAmount'); return; }
+      if (type === 'other' && !$('#aidDescription').value.trim()) { validationError("La description de l'aide est obligatoire.", '#aidDescription'); return; }
+      const aid = { id: nextId(state.familyAids, 'AID'), date: $('#aidDate').value, familyName: $('#aidFamilyName').value.trim(), type, amount: type === 'financial' ? Number($('#aidAmount').value) : 0, description: type === 'other' ? $('#aidDescription').value.trim() : '' };
+      const saved = await commitMutation(event.submitter, () => state.familyAids.push(aid), `${aid.id} enregistrée avec succès.`);
+      if (saved) { resetAidForm(); $('#aidFormPanel').classList.add('hidden'); }
+    });
+
+    $('#donationForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const type = $('#donationType').value;
+      const destinationType = $('#donationDestination').value;
+      const destination = destinationType === 'family' ? $('#donationFamilyDestination').value : destinationType === 'event' ? $('#donationEventDestination').value : destinationType === 'other' ? $('#donationOtherDestination').value.trim() : '';
+      if (!$('#donorName').value.trim()) { validationError('Le nom du donateur est obligatoire.', '#donorName'); return; }
+      if (!isIsoDate($('#donationDate').value) || $('#donationDate').value > today()) { validationError("La date du don n'est pas valide.", '#donationDate'); return; }
+      if (type === 'financial' && !isPositiveNumber($('#donationAmount').value)) { validationError('Le montant du don doit être supérieur à zéro.', '#donationAmount'); return; }
+      if (type === 'nature' && !$('#donationDescription').value.trim()) { validationError('La description du don en nature est obligatoire.', '#donationDescription'); return; }
+      if (type === 'nature' && (!Number.isInteger(Number($('#donationQuantity').value)) || Number($('#donationQuantity').value) < 1)) { validationError('La quantité doit être un nombre entier supérieur ou égal à 1.', '#donationQuantity'); return; }
+      if (destinationType !== 'stock' && !destination) { validationError('Veuillez préciser la destination du don.', destinationType === 'family' ? '#donationFamilyDestination' : destinationType === 'event' ? '#donationEventDestination' : '#donationOtherDestination'); return; }
+      const donation = { id: nextId(state.donations, 'REC'), date: $('#donationDate').value, donor: $('#donorName').value.trim(), type, amount: type === 'financial' ? Number($('#donationAmount').value) : 0, description: type === 'nature' ? $('#donationDescription').value.trim() : '', quantity: type === 'nature' ? Number($('#donationQuantity').value) : 0, destinationType, destination };
+      const saved = await commitMutation(event.submitter, () => state.donations.push(donation), `${donation.id} enregistré avec succès.`);
+      if (saved) { resetDonationForm(); $('#donationFormPanel').classList.add('hidden'); }
+    });
+
+    $('#memberForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!$('#memberLastName').value.trim()) { validationError("Le nom de l'adhérent est obligatoire.", '#memberLastName'); return; }
+      if (!$('#memberFirstName').value.trim()) { validationError("Le prénom de l'adhérent est obligatoire.", '#memberFirstName'); return; }
+      if (!isIsoDate($('#memberBirthDate').value) || $('#memberBirthDate').value > today()) { validationError("La date de naissance de l'adhérent n'est pas valide.", '#memberBirthDate'); return; }
+      if (!$('#memberMobile').value.trim()) { validationError('Le numéro de mobile est obligatoire.', '#memberMobile'); return; }
+      if (!$('#memberAddress').value.trim()) { validationError("L'adresse de l'adhérent est obligatoire.", '#memberAddress'); return; }
+      const member = { id: nextId(state.members, 'ADH'), lastName: $('#memberLastName').value.trim(), firstName: $('#memberFirstName').value.trim(), birthDate: $('#memberBirthDate').value, mobile: $('#memberMobile').value.trim(), profession: $('#memberProfession').value.trim(), address: $('#memberAddress').value.trim(), joinedAt: today() };
+      const saved = await commitMutation(event.submitter, () => state.members.push(member), `${member.id} enregistré avec succès.`);
+      if (saved) { resetMemberForm(); $('#memberFormPanel').classList.add('hidden'); }
+    });
+
+    $('#loanForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const loanDate = $('#loanDate').value;
+      const dueDate = $('#loanDueDate').value;
+      if (!$('#loanMaterial').value.trim()) { validationError('Le nom du matériel est obligatoire.', '#loanMaterial'); return; }
+      if (!$('#loanBorrower').value.trim()) { validationError("Le nom de l'emprunteur est obligatoire.", '#loanBorrower'); return; }
+      if (!isIsoDate(loanDate) || loanDate > today()) { validationError("La date de sortie n'est pas valide.", '#loanDate'); return; }
+      if (!isIsoDate(dueDate)) { validationError("La date de retour prévue n'est pas valide.", '#loanDueDate'); return; }
+      if (dueDate < loanDate) { setStatus('La date de retour prévue doit être postérieure ou égale à la date de sortie.', 'error', true); return; }
+      const loan = { id: nextId(state.loans, 'MAT'), material: $('#loanMaterial').value.trim(), borrower: $('#loanBorrower').value.trim(), loanDate, dueDate, returnedAt: '' };
+      const saved = await commitMutation(event.submitter, () => state.loans.push(loan), `${loan.id} enregistré avec succès.`);
+      if (saved) { resetLoanForm(); $('#loanFormPanel').classList.add('hidden'); }
+    });
+
+    $('#eventForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const expenses = collectExpenses();
+      if (!expenses.length) { setStatus('Ajoutez au moins une ligne de frais.', 'error', true); return; }
+      if (!isIsoDate($('#eventDate').value)) { validationError("La date de l'événement n'est pas valide.", '#eventDate'); return; }
+      if (!$('#eventName').value.trim()) { validationError("Le nom de l'événement est obligatoire.", '#eventName'); return; }
+      if ($('#eventBudget').value === '' || Number($('#eventBudget').value) < 0 || !Number.isFinite(Number($('#eventBudget').value))) { validationError('Le budget doit être un montant positif ou nul.', '#eventBudget'); return; }
+      if (!$('#eventResponsible').value.trim()) { validationError('Le nom du responsable est obligatoire.', '#eventResponsible'); return; }
+      if (!$('#eventDescription').value.trim()) { validationError("La description de l'événement est obligatoire.", '#eventDescription'); return; }
+      if (expenses.some(expense => !isPositiveNumber(expense.amount))) { validationError('Chaque ligne de frais doit comporter un montant supérieur à zéro.', '.expense-amount'); return; }
+      const record = { id: nextId(state.events, 'EVT'), date: $('#eventDate').value, name: $('#eventName').value.trim(), budget: Number($('#eventBudget').value) || 0, responsible: $('#eventResponsible').value.trim(), description: $('#eventDescription').value.trim(), expenses, photos: [] };
+      const saved = await commitMutation(event.submitter, () => state.events.push(record), `${record.id} enregistré avec succès.`);
+      if (saved) { resetEventForm(); $('#eventFormPanel').classList.add('hidden'); }
+    });
+
+    $('#addFamilyMember').addEventListener('click', addFamilyMemberRow);
+    $('#familyMembersRows').addEventListener('click', event => {
+      const button = event.target.closest('.remove-member-row');
+      if (!button) return;
+      if ($$('#familyMembersRows tr').length === 1) { setStatus('Le foyer doit conserver au moins une ligne.', 'warning', true); return; }
+      button.closest('tr').remove();
+    });
+    $('#addExpense').addEventListener('click', addExpenseRow);
+    $('#expenseRows').addEventListener('click', event => {
+      const button = event.target.closest('.remove-expense-row');
+      if (!button) return;
+      if ($$('#expenseRows tr').length === 1) { setStatus('Le dossier doit conserver au moins une ligne de frais.', 'warning', true); return; }
+      button.closest('tr').remove();
+      updateEventCalculation();
+    });
+    $('#eventForm').addEventListener('input', updateEventCalculation);
+    $('#aidType').addEventListener('change', toggleAidType);
+    $('#donationType').addEventListener('change', toggleDonationType);
+    $('#donationDestination').addEventListener('change', toggleDonationDestination);
+    $('#loanDate').addEventListener('change', () => {
+      $('#loanDueDate').min = $('#loanDate').value;
+      if ($('#loanDueDate').value && $('#loanDueDate').value < $('#loanDate').value) $('#loanDueDate').value = $('#loanDate').value;
+    });
+     $('#familyMonthFilter').addEventListener('change', renderFamilies);
+     $('#familyYearFilter').addEventListener('change', renderFamilies);
+     $('#refreshBilan').addEventListener('click', renderBilan);
+
+    $('#headerActions').addEventListener('click', event => {
+      if (event.target.closest('#printMembersList')) printMembersList();
+      if (event.target.closest('#openBadgeDialog')) {
+        if (!state.members.length) { setStatus('Inscrivez au moins un adhérent avant de créer un badge.', 'warning', true); return; }
+        $('#badgeDialog').showModal ? $('#badgeDialog').showModal() : $('#badgeDialog').setAttribute('open', '');
+      }
+    });
+    function closeBadgeDialog() { $('#badgeDialog').close ? $('#badgeDialog').close() : $('#badgeDialog').removeAttribute('open'); }
+    $('#closeBadgeDialog').addEventListener('click', closeBadgeDialog);
+    $('#cancelBadgeDialog').addEventListener('click', closeBadgeDialog);
+    $('#generateSelectedBadge').addEventListener('click', () => { const id = $('#badgeMemberSelect').value; if (id) { closeBadgeDialog(); printBadge(id); } });
+    $('#closeEventPhotosDialog').addEventListener('click', closeEventPhotosDialog);
+    $('#saveEventPhotos').addEventListener('click', async event => {
+      const eventRecord = state.events.find(item => item.id === activePhotoEventId);
+      if (!eventRecord) { setPhotoDialogMessage("Le dossier de l'événement est introuvable.", 'error'); return; }
+      const files = [...$('#eventPhotoFiles').files];
+      if (!files.length) { setPhotoDialogMessage('Sélectionnez au moins une photo.', 'error'); return; }
+      const existingCount = Array.isArray(eventRecord.photos) ? eventRecord.photos.length : 0;
+      if (existingCount + files.length > 10) { setPhotoDialogMessage(`Vous pouvez encore ajouter ${Math.max(0, 10 - existingCount)} photo(s) à cet événement.`, 'error'); return; }
+      const button = event.currentTarget;
+      button.disabled = true;
+      setPhotoDialogMessage('Compression et préparation des photos en cours...');
+      try {
+        const photos = [];
+        for (const file of files) photos.push(await compressEventPhoto(file));
+        const saved = await commitMutation(button, () => {
+          eventRecord.photos = Array.isArray(eventRecord.photos) ? eventRecord.photos : [];
+          eventRecord.photos.push(...photos);
+        }, `${photos.length} photo(s) ajoutée(s) à ${eventRecord.id}.`);
+        if (saved) {
+          $('#eventPhotoFiles').value = '';
+          renderEventPhotosDialog();
+          setPhotoDialogMessage(storageMode === 'memory' ? 'Photos ajoutées temporairement en mémoire. Aucun stockage persistant n’est disponible.' : 'Photos enregistrées avec succès.', storageMode === 'memory' ? 'error' : 'success');
+        }
+      } catch (error) {
+        setPhotoDialogMessage(error.message || "Impossible d'enregistrer les photos.", 'error');
+      } finally {
+        button.disabled = false;
+      }
+    });
+    $('#eventPhotosGrid').addEventListener('click', async event => {
+      const button = event.target.closest('[data-delete-event-photo]');
+      if (!button) return;
+      const eventRecord = state.events.find(item => item.id === activePhotoEventId);
+      const photoId = button.dataset.deleteEventPhoto;
+      const photo = eventRecord?.photos?.find(item => item.id === photoId);
+      if (!eventRecord || !photo || !confirm(`Supprimer définitivement la photo « ${photo.name || 'Photo'} » ?`)) return;
+      const saved = await commitMutation(button, () => { eventRecord.photos = eventRecord.photos.filter(item => item.id !== photoId); }, 'Photo supprimée après confirmation de la sauvegarde.');
+      if (saved) {
+        renderEventPhotosDialog();
+        setPhotoDialogMessage(storageMode === 'memory' ? 'Photo supprimée temporairement en mémoire.' : 'Photo supprimée avec succès.', storageMode === 'memory' ? 'error' : 'success');
+      }
+    });
+    $('#eventPhotosDialog').addEventListener('close', () => { activePhotoEventId = ''; $('#eventPhotoFiles').value = ''; });
+    $('#globalPrintBtn').addEventListener('click', printCurrentRegister);
+    $('#mobileGlobalPrintBtn').addEventListener('click', printCurrentRegister);
+    $('#closePrintArea').addEventListener('click', closePrintDocument);
+    $('#printDocumentBtn').addEventListener('click', () => window.print());
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && $('#printArea').classList.contains('visible')) closePrintDocument(); });
+    
+    loadFamilies();
+document.getElementById('headerLogo').src = LOGO_DATA_URI;
+  // 1. Initialiser Supabase avec tes clés
+  const SUPABASE_URL = https://cquptrnazysifdytyzvv.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_lrWwVjMx5_CiMyqBDadf2A_xUNclMdw';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // 2. Exemple pour récuperer les familles depuis la base de données
+  async function loadFamilies() {
+  try {
+    const { data, error } = await supabase
+      .from('suivi_materiel')
+      .select('*');
+
+    if (error) throw error;
+
+    prets = data || [];
+    renderMateriel(); // Mettre à jour l'affichage de votre tableau
+  } catch (e) {
+    console.error('Erreur chargement Supabase :', e);
+    showToast("Erreur lors du chargement des données");
+  }
+}
+
+    async function init() {
+      resetFamilyForm();
+      resetAidForm();
+      resetDonationForm();
+      resetMemberForm();
+      resetLoanForm();
+      resetEventForm();
+      renderHeaderActions();
+      await loadState();
+      renderAll();
+    }
+    init();
+  </script>
+</body>
+</html>
