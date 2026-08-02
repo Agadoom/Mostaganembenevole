@@ -922,12 +922,14 @@ function openDetail(id){
         </div>
       `).join('') || '<p style="color:var(--muted);font-size:13px;">Aucun document suivi.</p>'}
 
+      <!-- Suite des documents et des boutons d'actions -->
       <div class="panel-actions">
-        <button class="btn-secondary" id="printBtn">🖨️ Imprimer</button>
-        <button class="btn-secondary" id="editBtn">Modifier</button>
-        <button class="btn-danger" id="deleteBtn">Supprimer</button>
+        <button class="btn-secondary" id="editFamilyBtn">Éditer le dossier</button>
+        <button class="btn-danger" id="deleteFamilyBtn">Supprimer</button>
       </div>
     </div>
+  </div>
+</div>
   `;
   document.getElementById('closePanel').addEventListener('click', closePanel);
   document.getElementById('printBtn').addEventListener('click', ()=>printFamily(f.famille_id));
